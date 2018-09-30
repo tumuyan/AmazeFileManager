@@ -49,6 +49,7 @@ import com.amaze.filemanager.asynchronous.asynctasks.DeleteTask;
 import com.amaze.filemanager.asynchronous.services.ZipService;
 import com.amaze.filemanager.database.CloudHandler;
 import com.amaze.filemanager.database.CryptHandler;
+import com.amaze.filemanager.database.UtilsHandler;
 import com.amaze.filemanager.database.models.EncryptedEntry;
 import com.amaze.filemanager.filesystem.FileUtil;
 import com.amaze.filemanager.filesystem.HybridFile;
@@ -63,7 +64,10 @@ import com.amaze.filemanager.fragments.TabFragment;
 import com.amaze.filemanager.fragments.preference_fragments.PreferencesConstants;
 import com.amaze.filemanager.ui.dialogs.GeneralDialogCreation;
 import com.amaze.filemanager.ui.views.WarnableTextInputValidator;
+import com.amaze.filemanager.utils.application.AppConfig;
 import com.amaze.filemanager.utils.files.CryptUtil;
+import com.amaze.filemanager.utils.provider.UtilitiesProvider;
+import com.amaze.filemanager.utils.theme.AppTheme;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -73,14 +77,16 @@ import java.util.ArrayList;
  */
 public class MainActivityHelper {
 
-    public static final int NEW_FOLDER = 0, NEW_FILE = 1, NEW_SMB = 2, NEW_CLOUD = 3;
+    public static final int NEW_FOLDER = 0, NEW_FILE = 1, NEW_SMB = 2, NEW_CLOUD = 3,NEW_LIB=4;
 
     private static final String NEW_FILE_TXT_EXTENSION = ".txt";
 
     private MainActivity mainActivity;
     private DataUtils dataUtils = DataUtils.getInstance();
     private int accentColor;
+    private UtilitiesProvider utilsProvider;
 
+    private AppTheme  theme;
     /*
      * A static string which saves the last searched query. Used to retain search task after
      * user presses back button from pressing on any list item of search results
@@ -220,6 +226,16 @@ public class MainActivityHelper {
                 BottomSheetDialogFragment fragment = new CloudSheetFragment();
                 fragment.show(ma.getActivity().getSupportFragmentManager(),
                         CloudSheetFragment.TAG_FRAGMENT);
+            case NEW_LIB:
+              //  VerifyPath.buildAmazeFolder();
+/*                utilsProvider = mainActivity.getUtilsProvider();
+                theme = utilsProvider.getAppTheme();
+                */
+                theme=mainActivity.getAppTheme();
+               UtilsHandler utilsHandler = AppConfig.getInstance().getUtilsHandler();
+                GeneralDialogCreation.
+                        newLibraryDialog(  ma,theme,utilsHandler);
+
                 break;
         }
     }

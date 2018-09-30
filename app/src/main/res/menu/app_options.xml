@@ -10,6 +10,9 @@
         android:id="@+id/unins"
         android:title="@string/uninstall" />
     <item
+        android:id="@+id/addapp2lab"
+        android:title="@string/menu_item_add_to_lib" />
+    <item
         android:id="@+id/properties"
         android:title="@string/properties" />
     <item

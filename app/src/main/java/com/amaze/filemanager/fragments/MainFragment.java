@@ -78,6 +78,7 @@ import com.amaze.filemanager.asynchronous.handlers.FileHandler;
 import com.amaze.filemanager.database.CloudHandler;
 import com.amaze.filemanager.database.CryptHandler;
 import com.amaze.filemanager.database.SortHandler;
+import com.amaze.filemanager.database.UtilsHandler;
 import com.amaze.filemanager.database.models.EncryptedEntry;
 import com.amaze.filemanager.database.models.Tab;
 import com.amaze.filemanager.filesystem.CustomFileObserver;
@@ -100,6 +101,7 @@ import com.amaze.filemanager.utils.OTGUtil;
 import com.amaze.filemanager.utils.OpenMode;
 import com.amaze.filemanager.utils.SmbStreamer.Streamer;
 import com.amaze.filemanager.utils.Utils;
+import com.amaze.filemanager.utils.application.AppConfig;
 import com.amaze.filemanager.utils.cloud.CloudUtil;
 import com.amaze.filemanager.utils.files.CryptUtil;
 import com.amaze.filemanager.utils.files.EncryptDecryptUtils;
@@ -130,6 +132,7 @@ public class MainFragment extends android.support.v4.app.Fragment implements Bot
     public String home;
     public boolean selection, results = false;
     public OpenMode openMode = OpenMode.FILE;
+    private UtilsHandler utilsHandler;
 
     /**
      * boolean to identify if the view is a list or grid
@@ -197,7 +200,7 @@ public class MainFragment extends android.support.v4.app.Fragment implements Bot
         super.onCreate(savedInstanceState);
 
         setRetainInstance(true);
-
+        utilsHandler = AppConfig.getInstance().getUtilsHandler();
         dataUtils = DataUtils.getInstance();
         utilsProvider = getMainActivity().getUtilsProvider();
         sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -701,6 +704,17 @@ public class MainFragment extends android.support.v4.app.Fragment implements Bot
                         hide(checkedItems.get(i1).desc);
                     }
                     updateList();
+                    mode.finish();
+                    return true;
+
+                case R.id.add_item_to_lib:
+                     String[] paths=new String[checkedItems.size()];
+                    for (int i1 = 0; i1 < checkedItems.size(); i1++) {
+                        paths[i1]=(checkedItems.get(i1).desc);
+                    }
+                    if (ma != null){
+                        GeneralDialogCreation.AddToLibraryRootDialog(dataUtils, ma, utilsHandler,paths);
+                    }
                     mode.finish();
                     return true;
                 case R.id.ex:

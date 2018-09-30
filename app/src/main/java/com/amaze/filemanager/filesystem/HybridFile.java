@@ -66,11 +66,32 @@ public class HybridFile {
     //public static final int ROOT_MODE=3,LOCAL_MODE=0,SMB_MODE=1,UNKNOWN=-1;
     OpenMode mode = OpenMode.FILE;
 
+    String myname="";
+
     private DataUtils dataUtils = DataUtils.getInstance();
 
     public HybridFile(OpenMode mode, String path) {
         this.path = path;
         this.mode = mode;
+    }
+
+    public HybridFile(OpenMode mode, String path,String name) {
+        this.path = path;
+        this.mode = mode;
+        this.myname=name;
+    }
+    public String getMyName() {
+        String name = myname;
+/*        switch (mode) {
+            case SMB:
+                SmbFile smbFile = getSmbFile();
+                if (smbFile != null)
+                    return smbFile.getName();
+                break;
+            default:
+                      name =myname;
+        }*/
+        return name;
     }
 
     public HybridFile(OpenMode mode, String path, String name, boolean isDirectory) {
@@ -83,6 +104,8 @@ public class HybridFile {
             this.path = path + "/" + name;
         } else this.path = path + "/" + name;
     }
+
+
 
     public void generateMode(Context context) {
         if (path.startsWith("smb://")) {
@@ -299,7 +322,10 @@ public class HybridFile {
      * @deprecated use {@link #getName(Context)}
      */
     public String getName() {
-        String name = null;
+
+        if(myname.length()>0) return myname;
+
+        String name =null;
         switch (mode) {
             case SMB:
                 SmbFile smbFile = getSmbFile();

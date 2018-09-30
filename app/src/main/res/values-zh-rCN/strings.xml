@@ -19,7 +19,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
     -->
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-  <string name="app_name">Amaze 文件管理器</string>
+  <string name="app_name">Amaze文件管理</string>
   <string name="drawer_open">打开导航抽屉</string>
   <string name="drawer_close">关闭导航抽屉</string>
   <string name="icon">图标</string>
@@ -75,7 +75,7 @@
   <string name="dialog_delete_title">永久删除？</string>
   <string name="deleting">正在删除</string>
   <string name="questionset">您确定要将当前路径设置为此选项卡的默认位置吗？</string>
-  <string name="directorysort">目录排序方式</string>
+  <string name="directorysort">目录位置</string>
   <string name="sortby">排序方式</string>
   <string name="sort_only_this">仅应用于此目录</string>
   <string name="theme">主题</string>
@@ -159,7 +159,7 @@
   <string name="rootdirectory">根目录</string>
   <string name="addshortcut">创建快捷方式</string>
   <string name="unsavedchanges">未保存修改</string>
-  <string name="unsavedchangesdesc">您已经修改了此文件，是否要在退出前保存您所作的修改？</string>
+  <string name="unsavedchangesdesc">您已经修改了此文件，退出前是否保存改动？</string>
   <string name="saving">保存</string>
   <string name="packageinstaller">应用包安装程序</string>
   <string name="view">查看</string>
@@ -256,7 +256,7 @@
   <string name="doit">确定</string>
   <string name="wanthelp"><u>需要帮助吗？</u></string>
   <string name="quick">快速访问</string>
-  <string name="recent">最近访问文件</string>
+  <string name="recent">最新文件</string>
   <string name="edit">编辑</string>
   <string name="find">在本页中查找</string>
   <string name="grant">授予</string>
@@ -594,4 +594,20 @@
   <string name="unknown">未知</string>
   <string name="multiple_invalid_archive_entries">无法解压一些文件，压缩文件已损坏或为恶意文件</string>
     <string name="internalstorage">内部储存空间</string>
+    <string name="menu_item_hidden_file_on">显示隐藏文件</string>
+  <string name="menu_item_hidden_file_off">显示普通文件</string>
+  <string name="file_lib">文件库</string>
+    <string name="menu_item_add_to_lib">添加到文件库</string>
+  <string name="open_file_lib">打开文件库</string>
+  <string name="about_tversion">T版本是tumuyan基于原版Amaze文件管理器魔改的一个分支。\n
+    实际上我更希望使用fooView来进行魔改，但是fooVie并不是一个开源项目。在GitHub公开代码的的诸多Android文件管理器中反复筛选比较，最终选定了Amaze文件管理器。\n
+    做了什么样魔改？增加从来没有出现过在android文件管理器上的功能。基于库的目录文件组，快速目录跳转，增强的格式匹配，等等。当然这并不是每个人都有的需求，但是至少是我个人需要而又不存在的功能。\n
+  </string>
+    <string name="new_a_lib">新建文件库</string>
+  <string name="new_lib_stat_1">增加成功</string>
+  <string name="new_lib_stat_0">已经存在</string>
+  <string name="remove_duplicate_file">从文件库中移除重复文件</string>
+  <string name="rempve_empty_path">从文件库中移除空文件</string>
+  <string name="make_sd">在SD目录中新建Amazie路径</string>
+  <string name="scan_sd">扫描SD目录并添加到文件库</string>
 </resources>

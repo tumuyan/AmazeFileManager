@@ -24,6 +24,8 @@ package com.amaze.filemanager.ui.dialogs;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.hardware.fingerprint.FingerprintManager;
@@ -42,6 +44,7 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.format.Formatter;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -59,12 +62,15 @@ import com.amaze.filemanager.R;
 import com.amaze.filemanager.activities.MainActivity;
 import com.amaze.filemanager.activities.superclasses.ThemedActivity;
 import com.amaze.filemanager.adapters.HiddenAdapter;
+import com.amaze.filemanager.adapters.HiddenAdapter2;
 import com.amaze.filemanager.adapters.data.LayoutElementParcelable;
 import com.amaze.filemanager.asynchronous.asynctasks.CountItemsOrAndSizeTask;
 import com.amaze.filemanager.asynchronous.asynctasks.GenerateHashesTask;
 import com.amaze.filemanager.asynchronous.asynctasks.LoadFolderSpaceDataTask;
 import com.amaze.filemanager.asynchronous.services.EncryptService;
 import com.amaze.filemanager.database.SortHandler;
+import com.amaze.filemanager.database.UtilsHandler;
+import com.amaze.filemanager.database.models.OperationData;
 import com.amaze.filemanager.database.models.Sort;
 import com.amaze.filemanager.exceptions.ShellNotRunningException;
 import com.amaze.filemanager.filesystem.FileUtil;
@@ -83,10 +89,12 @@ import com.amaze.filemanager.utils.OpenMode;
 import com.amaze.filemanager.utils.RootUtils;
 import com.amaze.filemanager.utils.SimpleTextWatcher;
 import com.amaze.filemanager.utils.Utils;
+import com.amaze.filemanager.utils.VerifyPath;
 import com.amaze.filemanager.utils.files.CryptUtil;
 import com.amaze.filemanager.utils.files.EncryptDecryptUtils;
 import com.amaze.filemanager.utils.files.FileUtils;
 import com.amaze.filemanager.utils.theme.AppTheme;
+import com.cloudrail.si.servicecode.commands.TypeOf;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.data.Entry;
@@ -95,6 +103,9 @@ import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.IValueFormatter;
 import com.github.mikephil.charting.utils.ViewPortHandler;
+import com.squareup.haha.perflib.Main;
+
+import org.hamcrest.core.Every;
 
 import java.io.File;
 import java.io.IOException;
@@ -110,6 +121,7 @@ import java.util.stream.Stream;
 
 import static android.os.Build.VERSION_CODES.M;
 import static com.amaze.filemanager.fragments.preference_fragments.PreferencesConstants.PREFERENCE_SORTBY_ONLY_THIS;
+import static com.amaze.filemanager.utils.VerifyPath.buildAmazeFolder;
 import static com.amaze.filemanager.utils.files.FileUtils.toHybridFileArrayList;
 
 /**
@@ -1031,6 +1043,268 @@ public class GeneralDialogCreation {
         MaterialDialog x= a.build();
         adapter.updateDialog(x);
         x.show();
+    }
+
+
+
+    // 库名 （含跳转
+    public static void showLibraryRootDialog(final DataUtils dataUtils, SharedPreferences sharedPrefs,
+                                         final MainFragment m, AppTheme appTheme, UtilsHandler utilsHandler) {
+
+        ArrayList list= utilsHandler.getLibraryRootList();
+        if(null!=list) {
+            String[] liblist = new String[list.size()];
+            list.toArray(liblist);
+
+            int accentColor = m.getMainActivity().getAccent();
+            final MaterialDialog.Builder a = new MaterialDialog.Builder(m.getActivity());
+            a.positiveText(R.string.cancel);
+            a.positiveColor(accentColor);
+            a.negativeText(R.string.clear);
+            a.negativeColor(accentColor);
+            a.title(R.string.file_lib);
+            a.onNegative((dialog, which) -> utilsHandler.clearlib());
+            a.theme(appTheme.getMaterialDialogTheme());
+            a.autoDismiss(true);
+            a.items(liblist);
+            a.itemsCallback(new MaterialDialog.ListCallback() {//选中监听，同时dialog消失
+                @Override
+                public void onSelection(MaterialDialog dialog, View itemView, int position, CharSequence text) {
+                    String log = "下标：" + position + " and 数据：" + text;
+                    Log.w("libroot", log);
+                    //   showLibraryDialog(dataUtils, sharedPrefs, m, appTheme,utilsHandler,text.toString());
+                    showLibraryChildDialog(dataUtils, sharedPrefs, m, appTheme, utilsHandler, text.toString());
+                }
+            });
+
+            MaterialDialog x = a.build();
+            x.show();
+        }else{
+            AppTheme theme=m.getMainActivity().getAppTheme();
+            newLibraryDialog(  m,theme,utilsHandler);
+          //  newLibraryDialog(m,appTheme.getMaterialDialogTheme(),utilsHandler);
+        }
+    }
+
+
+    // 展示库名>添加数据
+    public static void AddToLibraryRootDialog(final DataUtils dataUtils,
+                                             final MainFragment m,  UtilsHandler utilsHandler,String[] paths) {
+
+        ArrayList list= utilsHandler.getLibraryRootList();
+        if(null!=list) {
+
+            String[] liblist = new String[list.size()];
+            list.toArray(liblist);
+
+            int accentColor = m.getMainActivity().getAccent();
+            final MaterialDialog.Builder a = new MaterialDialog.Builder(m.getActivity());
+            a.positiveText(R.string.cancel);
+            a.positiveColor(accentColor);
+            a.negativeText(R.string.clear);
+            a.negativeColor(accentColor);
+            a.title(R.string.file_lib);
+            a.onNegative((dialog, which) -> utilsHandler.clearlib());
+            a.autoDismiss(true);
+            a.items(liblist);
+            a.itemsCallback(new MaterialDialog.ListCallback() {//选中监听，同时dialog消失
+                @Override
+                public void onSelection(MaterialDialog dialog, View itemView, int position, CharSequence text) {
+                        utilsHandler.updateLibPath(paths,""+text);
+//               更换为批量插入的方法
+//                    for (String path : paths) {
+//                        String log = "下标：" + position + " and 数据：" + text;
+//                        Log.w("add", log);
+//                        String name = path.replaceFirst("/$", "").replaceAll(".*/", "");
+//                        utilsHandler.saveToDatabase(new OperationData(UtilsHandler.Operation.LIB, name, path, "" + text));
+//                    }
+
+                    //   showLibraryDialog(dataUtils, sharedPrefs, m, appTheme,utilsHandler,text.toString());
+
+                }
+            });
+
+            MaterialDialog x = a.build();
+            x.show();
+        }else{
+            AppTheme theme=m.getMainActivity().getAppTheme();
+            newLibraryDialog(  m,theme,utilsHandler);
+        }
+    }
+
+
+//展示库的明细
+    public static void showLibraryChildDialog(final DataUtils dataUtils, SharedPreferences sharedPrefs,
+                                         final MainFragment m, AppTheme appTheme, UtilsHandler utilsHandler,String lib) {
+        //   final MainFragment m, AppTheme appTheme,ArrayList f) {
+        //   ArrayList   f = utilsHandler.getLibraryRootList();
+        ArrayList<String[]>   f = utilsHandler.getLibraryChildList(lib);
+        int accentColor = m.getMainActivity().getAccent();
+        final MaterialDialog.Builder a = new MaterialDialog.Builder(m.getActivity());
+        a.positiveText(R.string.cancel);
+        a.positiveColor(accentColor);
+        a.negativeText(R.string.clear);
+        a.negativeColor(accentColor);
+        a.title(lib);
+        a.onNegative((dialog, which) ->{
+            utilsHandler.clearlib(lib);
+        });
+        a.theme(appTheme.getMaterialDialogTheme());
+
+        a.autoDismiss(true);
+        HiddenAdapter adapter = new HiddenAdapter(m.getActivity(), m, sharedPrefs,
+                Lists2HybridFileArrayList(f), null, true,lib);
+        a.adapter(adapter, null);
+
+        MaterialDialog x= a.build();
+        adapter.updateDialog(x);
+        x.show();
+    }
+
+    //展示库的明细-简化参数
+    public static void showLibraryChildDialog(  SharedPreferences sharedPrefs,
+                                              final MainFragment m,  UtilsHandler utilsHandler,String lib) {
+        //   final MainFragment m, AppTheme appTheme,ArrayList f) {
+        //   ArrayList   f = utilsHandler.getLibraryRootList();
+        ArrayList<String[]>   f = utilsHandler.getLibraryChildList(lib);
+        int accentColor = m.getMainActivity().getAccent();
+        final MaterialDialog.Builder a = new MaterialDialog.Builder(m.getActivity());
+        a.positiveText(R.string.cancel);
+        a.positiveColor(accentColor);
+        a.negativeText(R.string.clear);
+        a.negativeColor(accentColor);
+        a.title(lib);
+        a.onNegative((dialog, which) -> utilsHandler.clearlib(lib) );
+       a.autoDismiss(true);
+        HiddenAdapter adapter = new HiddenAdapter(m.getActivity(), m, sharedPrefs,
+                Lists2HybridFileArrayList(f), null, true,lib);
+        a.adapter(adapter, null);
+
+        MaterialDialog x= a.build();
+        adapter.updateDialog(x);
+        x.show();
+    }
+    // 删除库（含菜单界面
+    public static void RemoveALibraryDialog( final MainFragment m, UtilsHandler utilsHandler,String path,String lib,MaterialDialog materialDialog , SharedPreferences sharedPrefs) {
+        if(lib.length()>0) {
+            int accentColor = m.getMainActivity().getAccent();
+            final MaterialDialog.Builder a = new MaterialDialog.Builder(m.getActivity());
+            if(path.length()>0){
+                a.title(R.string.remove_a_lib_item);
+                a.content(path+"\nfrom "+lib);
+            }else{
+                a.title(R.string.remove_a_lib );
+                a.content(lib);
+            }
+            a.positiveText(R.string.ok);
+            a.positiveColor(accentColor);
+            a.negativeText(R.string.cancel);
+            a.negativeColor(accentColor);
+            //     a.neutralText(R.string.create);
+            //    a.items(items);
+
+            a.onPositive((dialog, which) -> {
+                utilsHandler.remove_a_lib(path,lib);
+                materialDialog.dismiss();
+                showLibraryChildDialog( sharedPrefs, m,  utilsHandler, lib);
+            });
+      //      a.theme(appTheme.getMaterialDialogTheme());
+            a.autoDismiss(true);
+            MaterialDialog x = a.build();
+            x.show();
+        }
+
+
+    }
+
+// 新建库（含菜单界面
+    public static void newLibraryDialog( final MainFragment m, AppTheme appTheme , UtilsHandler utilsHandler ) {
+        String[] items = {
+                m.getResources().getString( (R.string.scan_sd)),
+                m.getResources().getString( (R.string.remove_duplicate_file)),
+                m.getResources().getString( (R.string.rempve_empty_path)),
+        };
+        int accentColor = m.getMainActivity().getAccent();
+        final MaterialDialog.Builder a = new MaterialDialog.Builder(m.getActivity());
+        a.positiveText(R.string.ok);
+        a.positiveColor(accentColor);
+        a.negativeText(R.string.cancel);
+        a.negativeColor(accentColor);
+   //     a.neutralText(R.string.create);
+    //    a.items(items);
+
+        a.customView(R.layout.dialog_new_lib, true);
+        a.itemsCallbackMultiChoice(null, new MaterialDialog.ListCallbackMultiChoice() {
+            @Override
+            public boolean onSelection(MaterialDialog dialog, Integer[] which, CharSequence[] text) {
+                return true;
+            }
+        });
+        a.title(R.string.new_a_lib);
+        a.onPositive((dialog, which) ->  verifyLibrary(dialog,utilsHandler,m));
+        a.theme(appTheme.getMaterialDialogTheme());
+        a.autoDismiss(true);
+        MaterialDialog x= a.build();
+        x.show();
+
+
+    }
+    // 新建库后的作业方法
+    static String  verifyLibrary(MaterialDialog dialog,UtilsHandler utilsHandler, MainFragment m){
+        EditText edit  = dialog.getCustomView().findViewById(R.id.editText_LibraryName);
+        CheckBox ScanSD= dialog.getCustomView().findViewById(R.id.checkBox_scan_sd);
+        CheckBox MakeSD= dialog.getCustomView().findViewById(R.id.checkBox_make_sd);
+        CheckBox RemoveEmpty= dialog.getCustomView().findViewById(R.id.checkBox_rempve_empty_path);
+        CheckBox RemoveDuplicate= dialog.getCustomView().findViewById(R.id.checkBox_remove_duplicate_file);
+        String input= edit.getText().toString();
+        String out="";
+
+        if(ScanSD.isChecked()){
+            buildAmazeFolder();
+        }
+
+        if(RemoveDuplicate.isChecked()){
+            utilsHandler.rebuildLibraryAllList(RemoveEmpty.isChecked());
+        }else if(RemoveEmpty.isChecked()){
+            utilsHandler.removeEmptyPath();
+        }
+
+        if(input.length()>0){
+            ArrayList<String[]>   f = utilsHandler.getLibraryChildList(input);
+
+            if(f.size()<1){
+                utilsHandler.updateLibPath("","",input);
+                out="\""+input+"\" "+ m.getResources().getString(R.string.new_lib_stat_1);
+                Log.i("newLibraryDialog","added");
+            }else{
+                Log.i("newLibraryDialog","skip");
+                out="\""+input+"\" "+ m.getResources().getString(R.string.new_lib_stat_0);
+            }
+            Toast.makeText(m.getActivity(),out,Toast.LENGTH_SHORT).show();
+        }
+        Log.i("newLibraryDialog","input null");
+        return input;
+    };
+
+/*    参考*/
+    public static ArrayList<HybridFile> List2HybridFileArrayList(ArrayList<String> a) {
+        ArrayList<HybridFile> b = new ArrayList<>();
+        for (String s : a) {
+            HybridFile hFile = new HybridFile(OpenMode.UNKNOWN, s);
+            hFile.generateMode(null);
+            b.add(hFile);
+        }
+        return b;
+    }
+
+    public static ArrayList<HybridFile> Lists2HybridFileArrayList(ArrayList<String[]> a) {
+        ArrayList<HybridFile> b = new ArrayList<>();
+        for (String[] s : a) {
+            HybridFile hFile = new HybridFile(OpenMode.UNKNOWN, s[1],s[0]);
+            hFile.generateMode(null);
+            b.add(hFile);
+        }
+        return b;
     }
 
     public static void showHiddenDialog(DataUtils dataUtils, SharedPreferences sharedPrefs,

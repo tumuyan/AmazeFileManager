@@ -9,6 +9,7 @@ import static com.amaze.filemanager.database.UtilsHandler.Operation.BOOKMARKS;
 import static com.amaze.filemanager.database.UtilsHandler.Operation.GRID;
 import static com.amaze.filemanager.database.UtilsHandler.Operation.HIDDEN;
 import static com.amaze.filemanager.database.UtilsHandler.Operation.HISTORY;
+import static com.amaze.filemanager.database.UtilsHandler.Operation.LIB;
 import static com.amaze.filemanager.database.UtilsHandler.Operation.LIST;
 import static com.amaze.filemanager.database.UtilsHandler.Operation.SFTP;
 import static com.amaze.filemanager.database.UtilsHandler.Operation.SMB;
@@ -20,6 +21,7 @@ public class OperationData {
     public final String hostKey;
     public final String sshKeyName;
     public final String sshKey;
+    public final String lib;
 
     /**
      * Constructor for types {@link Operation#HIDDEN}, {@link Operation#HISTORY},
@@ -37,6 +39,7 @@ public class OperationData {
         hostKey = null;
         sshKeyName = null;
         sshKey = null;
+        lib="";
     }
 
     /**
@@ -48,6 +51,23 @@ public class OperationData {
         this.type = type;
         this.path = path;
         this.name = name;
+
+        hostKey = null;
+        sshKeyName = null;
+        sshKey = null;
+        lib="";
+    }
+
+    /**
+     * Constructor for types {@link Operation#BOOKMARKS} or {@link Operation#SMB}or {@link Operation#LIB}
+     */
+    public OperationData(Operation type, String name, String path,String lib) {
+        if(type != BOOKMARKS && type != SMB && type!=LIB) throw new IllegalArgumentException("Wrong constructor for object type");
+
+        this.type = type;
+        this.path = path;
+        this.name = name;
+        this.lib=lib;
 
         hostKey = null;
         sshKeyName = null;
@@ -69,6 +89,7 @@ public class OperationData {
         this.hostKey = hostKey;
         this.sshKeyName = sshKeyName;
         this.sshKey = sshKey;
+        lib="";
     }
 
     @Override

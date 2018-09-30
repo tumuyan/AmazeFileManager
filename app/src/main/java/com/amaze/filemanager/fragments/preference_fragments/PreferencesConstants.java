@@ -80,4 +80,5 @@ public class PreferencesConstants {
     //START sort preferences
     public static final String  PREFERENCE_SORTBY_ONLY_THIS = "sortby_only_this";
     //END sort preferences
+    public static final String  PREFERENCE_BUILD_AMAZE_FOLDER = "buildAmazeFolder";
 }

@@ -92,6 +92,11 @@ import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicLong;
 
 import jcifs.smb.SmbFile;
+//import net.sf.jmimemagic.Magic;
+//import net.sf.jmimemagic.MagicException;
+//import net.sf.jmimemagic.MagicMatch;
+//import net.sf.jmimemagic.MagicMatchNotFoundException;
+//import net.sf.jmimemagic.MagicParseException;
 
 /**
  * Functions that deal with files
@@ -558,6 +563,25 @@ public class FileUtils {
     public static void openWith(final File f, final Context c, final boolean useNewStack) {
         MaterialDialog.Builder a=new MaterialDialog.Builder(c);
         a.title(c.getString(R.string.openas));
+/*    String path=f.getPath();
+        Log.w("file name",path);
+        Log.w("open file","1:type file");
+        if(f.exists()){
+            Log.i("f","exists");
+        }else {
+            Log.i("f","not exists");
+        }
+        File file=new File("/"+path);
+        if(file.exists()){
+            Log.i("f2","exists");
+        }else {
+            Log.i("f2","not exists");
+        }
+//        String  type=  MimeTypes.getMimeType2(f);
+  MimeTypes.getMimeType4_(file);*/
+        MimeTypes.getMimeType4(f);
+
+     //   Log.w("type", type );
         String[] items=new String[]{c.getString(R.string.text),c.getString(R.string.image),c.getString(R.string.video),c.getString(R.string.audio),c.getString(R.string.database),c.getString(R.string.other)};
 
         a.items(items).itemsCallback((materialDialog, view, i, charSequence) -> {
@@ -603,6 +627,7 @@ public class FileUtils {
 
     public static void openWith(final DocumentFile f, final Context c, final boolean useNewStack) {
         MaterialDialog.Builder a = new MaterialDialog.Builder(c);
+        Log.w("open file","2:type document");
         a.title(c.getString(R.string.openas));
         String[] items = new String[]{c.getString(R.string.text), c.getString(R.string.image), c.getString(R.string.video), c.getString(R.string.audio), c.getString(R.string.database), c.getString(R.string.other)};
 

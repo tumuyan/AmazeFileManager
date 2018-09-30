@@ -50,6 +50,7 @@ public class RarExtractor extends Extractor {
     protected void extractWithFilter(@NonNull Filter filter) throws IOException {
         try {
             long totalBytes = 0;
+
             Archive rarFile = new Archive(new File(filePath));
             ArrayList<FileHeader> arrayList = new ArrayList<>();
 

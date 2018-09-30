@@ -46,6 +46,8 @@ public class UtilsHandler extends SQLiteOpenHelper {
     private static final String TABLE_LIST = "list";
     private static final String TABLE_GRID = "grid";
     private static final String TABLE_BOOKMARKS = "bookmarks";
+    private static final String TABLE_LIB = "lib";
+    private static final String TABLE_LIBNAME = "lib_name";
     private static final String TABLE_SMB = "smb";
     private static final String TABLE_SFTP = "sftp";
 
@@ -55,6 +57,8 @@ public class UtilsHandler extends SQLiteOpenHelper {
     private static final String COLUMN_HOST_PUBKEY = "pub_key";
     private static final String COLUMN_PRIVATE_KEY_NAME = "ssh_key_name";
     private static final String COLUMN_PRIVATE_KEY = "ssh_key";
+    private static final String COLUMN_LIB = "lib";
+    private static final String COLUMN_LIBNAME = "lib_name";
 
     private static final String querySftp = "CREATE TABLE IF NOT EXISTS " + TABLE_SFTP + " ("
             + COLUMN_ID + " INTEGER PRIMARY KEY,"
@@ -92,7 +96,20 @@ public class UtilsHandler extends SQLiteOpenHelper {
                 + COLUMN_ID + " INTEGER PRIMARY KEY,"
                 + COLUMN_NAME + " TEXT,"
                 + COLUMN_PATH + " TEXT"
+
                 + ")";
+        String queryLib="CREATE TABLE IF NOT EXISTS " + TABLE_LIB  + " ("
+                + COLUMN_ID + " INTEGER PRIMARY KEY,"
+                + COLUMN_NAME + " TEXT,"
+                + COLUMN_PATH + " TEXT,"
+                + COLUMN_LIB + " TEXT"
+                + ")";
+/*      暂不启用libname表
+        String queryLibName="CREATE TABLE IF NOT EXISTS " + TABLE_LIBNAME + " ("
+                + COLUMN_ID + " INTEGER PRIMARY KEY,"
+                + COLUMN_LIB + " TEXT,"
+                + COLUMN_LIBNAME + " TEXT"
+                + ")";*/
         String querySmb = "CREATE TABLE IF NOT EXISTS " + TABLE_SMB + " ("
                 + COLUMN_ID + " INTEGER PRIMARY KEY,"
                 + COLUMN_NAME + " TEXT,"
@@ -105,7 +122,10 @@ public class UtilsHandler extends SQLiteOpenHelper {
         db.execSQL(queryGrid);
         db.execSQL(queryBookmarks);
         db.execSQL(querySmb);
+        db.execSQL(queryLib);
+ //       db.execSQL(queryLibName);
         db.execSQL(querySftp);
+        Log.w("UtilsHandler","oncreate");
     }
 
     @Override
@@ -126,7 +146,8 @@ public class UtilsHandler extends SQLiteOpenHelper {
         GRID,
         BOOKMARKS,
         SMB,
-        SFTP
+        SFTP,
+        LIB
     }
 
     public void saveToDatabase(OperationData operationData) {
@@ -146,6 +167,9 @@ public class UtilsHandler extends SQLiteOpenHelper {
                     addSsh(operationData.name, operationData.path, operationData.hostKey,
                             operationData.sshKeyName, operationData.sshKey);
                     break;
+                case LIB:
+                    setPath(operationData.type, operationData.name, operationData.path,operationData.lib);
+                    break;
                 default:
                     throw new IllegalStateException("Unidentified operation!");
             }
@@ -164,6 +188,8 @@ public class UtilsHandler extends SQLiteOpenHelper {
                 case BOOKMARKS:
                     removeBookmarksPath(operationData.name, operationData.path);
                     break;
+                case LIB:
+                    removelib(operationData.name,operationData.path,operationData.lib);
                 case SMB:
                     removeSmbPath(operationData.name, operationData.path);
                     break;
@@ -191,6 +217,7 @@ public class UtilsHandler extends SQLiteOpenHelper {
             saveToDatabase(new OperationData(Operation.BOOKMARKS, new File(dir).getName(), dir));
         }
     }
+
 
     public void addSsh(String name, String path, String hostKey, String sshKeyName, String sshKey) {
         SQLiteDatabase database = getWritableDatabase();
@@ -237,6 +264,166 @@ public class UtilsHandler extends SQLiteOpenHelper {
         }
         cursor.close();
 
+        return paths;
+    }
+
+    public LinkedList<String> getLibraryLinkedList(String lib) {
+        SQLiteDatabase sqLiteDatabase = getReadableDatabase();
+        Cursor cursor = sqLiteDatabase.query(getTableForOperation(Operation.LIB), null,
+                COLUMN_LIB +" = ? ", new String[]{ lib}, null, null,null);
+
+        LinkedList<String> paths = new LinkedList<>();
+        boolean hasNext = cursor.moveToFirst();
+        while (hasNext) {
+            paths.push(cursor.getString(cursor.getColumnIndex(COLUMN_PATH)));
+            hasNext = cursor.moveToNext();
+        }
+        cursor.close();
+
+        return paths;
+    }
+
+    public ArrayList<String> getLibraryList(){
+        SQLiteDatabase sqLiteDatabase = getReadableDatabase();
+        Cursor cursor = sqLiteDatabase.query(getTableForOperation(Operation.LIB), null,
+                null, null, null, null, COLUMN_LIB);
+        ArrayList<String> paths = new ArrayList<>();
+        boolean hasNext = cursor.moveToFirst();
+        while (hasNext) {
+            paths.add(cursor.getString(cursor.getColumnIndex(COLUMN_PATH)));
+            hasNext = cursor.moveToNext();
+        }
+        cursor.close();
+        return paths;
+    }
+
+    public ArrayList<String> getLibraryRootList(){
+        SQLiteDatabase sqLiteDatabase = getReadableDatabase();
+        Cursor cursor = sqLiteDatabase.query(getTableForOperation(Operation.LIB),
+                new String[]{COLUMN_LIB,COLUMN_NAME},
+                null, null, COLUMN_LIB, null,null);
+        ArrayList<String> paths = new ArrayList<>();
+        boolean hasNext = cursor.moveToFirst();
+        while (hasNext) {
+            paths.add(cursor.getString(cursor.getColumnIndex(COLUMN_LIB)));
+            hasNext = cursor.moveToNext();
+        }
+        cursor.close();
+        return paths;
+    }
+
+    public ArrayList<String[]> getLibraryChildList(String lib){
+        SQLiteDatabase sqLiteDatabase = getReadableDatabase();
+        Cursor cursor = sqLiteDatabase.query(getTableForOperation(Operation.LIB),null,
+//             COLUMN_NAME+" LIKE ? AND "+
+//                     COLUMN_PATH+" LIKE ? AND " +
+
+                COLUMN_LIB +" = ? ", new String[]{ lib}, null, null,null);
+                //     COLUMN_LIB +" = ? ", new String[]{lib}, null, null,null);
+        ArrayList<String[]> paths = new ArrayList<>();
+        boolean hasNext = cursor.moveToFirst();
+        while (hasNext) {
+            String[] path=new String[2];
+            path[0]=cursor.getString(cursor.getColumnIndex(COLUMN_NAME));
+            path[1]=cursor.getString(cursor.getColumnIndex(COLUMN_PATH));
+            paths.add(path);
+            hasNext = cursor.moveToNext();
+        }
+        cursor.close();
+        return paths;
+    }
+
+    // 刷新文件库的空滤镜
+    public void removeEmptyPath(){
+
+        SQLiteDatabase sqLiteDatabase = getReadableDatabase();
+        sqLiteDatabase.beginTransaction();
+
+        Cursor cursor = sqLiteDatabase.query(true,TABLE_LIB, new String[]{COLUMN_NAME,COLUMN_PATH,COLUMN_LIB},
+                null,null,
+                null, null, null,null);
+
+        ArrayList<String[]> paths = new ArrayList<>();
+        boolean hasNext = cursor.moveToFirst();
+        while (hasNext) {
+            String path = cursor.getString(cursor.getColumnIndex(COLUMN_PATH));
+            File f = new File(path);
+            if (!f.exists())
+                sqLiteDatabase.delete(TABLE_LIB, COLUMN_PATH + "=?", new String[]{path});
+            hasNext = cursor.moveToNext();
+        }
+        cursor.close();
+
+        sqLiteDatabase.setTransactionSuccessful();
+        sqLiteDatabase.endTransaction();
+
+    }
+
+    // 刷新文件库的重复路径
+    public void rebuildLibraryAllList(Boolean isExist){
+
+        ArrayList<String[]> list=getLibraryAllList(isExist);
+        SQLiteDatabase sqLiteDatabase = getReadableDatabase();
+        sqLiteDatabase.beginTransaction();
+
+        sqLiteDatabase.execSQL("DROP TABLE "+TABLE_LIB);
+        String queryLib="CREATE TABLE IF NOT EXISTS " + TABLE_LIB  + " ("
+                + COLUMN_ID + " INTEGER PRIMARY KEY,"
+                + COLUMN_NAME + " TEXT,"
+                + COLUMN_PATH + " TEXT,"
+                + COLUMN_LIB + " TEXT"
+                + ")";
+        sqLiteDatabase.execSQL(queryLib);
+
+        for (String[] path:list) {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(COLUMN_NAME, path[0]);
+            contentValues.put(COLUMN_PATH, path[1]);
+            contentValues.put(COLUMN_LIB, path[2]);
+            sqLiteDatabase.insert(TABLE_LIB,null,contentValues );
+        }
+        sqLiteDatabase.setTransactionSuccessful();
+        sqLiteDatabase.endTransaction();
+
+    }
+    // 获取文件库的全部内容
+    public ArrayList<String[]> getLibraryAllList(Boolean isExist){
+        SQLiteDatabase sqLiteDatabase = getReadableDatabase();
+
+        /**
+         * 参数一：是否去重
+         * 参数二：表名
+         * 参数三：columns 表示查询的字段,new String[]{MODEL}表示查询该表当中的模式（也表示查询的结果）
+         * 参数思：selection表示查询的条件，PHONE_NUMBER+" = ?" 表示根据手机号去查询模式
+         * 参数五：selectionArgs 表示查询条件对应的值,new String[]{phoneNumber}表示查询条件对应的值
+         * 参数六：String groupBy 分组
+         * 参数七：String having
+         * 参数八：orderBy 表示根据什么排序,
+         * 参数九：limit  限制查询返回的行数，NULL表示无限制子句
+         */
+
+        Cursor cursor = sqLiteDatabase.query(true,TABLE_LIB, new String[]{COLUMN_NAME,COLUMN_PATH,COLUMN_LIB},
+                null,null,
+                null, null, null,null);
+
+        ArrayList<String[]> paths = new ArrayList<>();
+        boolean hasNext = cursor.moveToFirst();
+        while (hasNext) {
+            String[] path=new String[3];
+            path[0]=cursor.getString(cursor.getColumnIndex(COLUMN_NAME));
+            path[1]=cursor.getString(cursor.getColumnIndex(COLUMN_PATH));
+            path[2]=cursor.getString(cursor.getColumnIndex(COLUMN_LIB));
+            hasNext = cursor.moveToNext();
+            if(isExist){
+                File f=new File(path[1]);
+                if(!f.exists()){
+                   continue;
+                }
+            }
+            paths.add(path);
+
+        }
+        cursor.close();
         return paths;
     }
 
@@ -414,6 +601,59 @@ public class UtilsHandler extends SQLiteOpenHelper {
                 new String[] {name, path});
     }
 
+    private void removelib(String name,String path,String lib){
+        SQLiteDatabase sqLiteDatabase = getWritableDatabase();
+
+        sqLiteDatabase.delete(TABLE_LIB, COLUMN_NAME + " = ? AND " + COLUMN_PATH + " = ? AND "+COLUMN_LIB+" = ?",
+                new String[] {name, path, lib});
+    }
+
+   public void remove_a_lib(String path,String lib){
+        SQLiteDatabase sqLiteDatabase = getWritableDatabase();
+        if(path.length()>0){
+            sqLiteDatabase.delete(TABLE_LIB,   COLUMN_PATH + " = ? AND "+COLUMN_LIB+" = ?",
+                    new String[] { path, lib});
+        }else{
+            sqLiteDatabase.delete(TABLE_LIB,  COLUMN_LIB+" = ?",
+                    new String[] {lib});
+
+        }
+
+
+    }
+
+   public void clearlib(){
+        SQLiteDatabase sqLiteDatabase = getWritableDatabase();
+
+      //  sqLiteDatabase.delete(TABLE_LIB);
+        sqLiteDatabase.execSQL("DROP TABLE "+TABLE_LIB);
+        String queryLib="CREATE TABLE IF NOT EXISTS " + TABLE_LIB  + " ("
+                + COLUMN_ID + " INTEGER PRIMARY KEY,"
+                + COLUMN_NAME + " TEXT,"
+                + COLUMN_PATH + " TEXT,"
+                + COLUMN_LIB + " TEXT"
+                + ")";
+        sqLiteDatabase.execSQL(queryLib);
+/* 暂不启用libname表
+       sqLiteDatabase.execSQL("DROP TABLE "+TABLE_LIBNAME);
+        String queryLibName="CREATE TABLE IF NOT EXISTS " + TABLE_LIBNAME + " ("
+               + COLUMN_ID + " INTEGER PRIMARY KEY,"
+               + COLUMN_LIB + " TEXT,"
+               + COLUMN_LIBNAME + " TEXT"
+               + ")";
+       sqLiteDatabase.execSQL(queryLibName);*/
+    }
+    public void clearlib(String lib){
+        SQLiteDatabase sqLiteDatabase = getWritableDatabase();
+        sqLiteDatabase.delete(TABLE_LIB, COLUMN_LIB+" = ?",
+                new String[] {lib});
+
+    //    sqLiteDatabase.delete(TABLE_LIBNAME, COLUMN_LIB +   " = ?",  new String[] {lib});
+
+
+    }
+
+
     /**
      * Remove SMB entry
      * @param path the path we get from saved runtime variables is a decrypted, to remove entry,
@@ -489,6 +729,70 @@ public class UtilsHandler extends SQLiteOpenHelper {
         sqLiteDatabase.insert(getTableForOperation(operation), null, contentValues);
     }
 
+    // 普通的存储数据到lib表的方法
+    private void setPath(Operation operation, String name, String path,String lib) {
+        SQLiteDatabase sqLiteDatabase = getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(COLUMN_NAME, name);
+        contentValues.put(COLUMN_PATH, path);
+        contentValues.put(COLUMN_LIB, lib);;
+        sqLiteDatabase.insert(getTableForOperation(operation), null, contentValues);
+    }
+
+
+    //新的存储数据到lib表的方法，防止插入重复数据，并且不需要使用operation类了。
+    public void updateLibPath(String name, String path , String lib) {
+
+        SQLiteDatabase sqLiteDatabase = getWritableDatabase();
+
+        sqLiteDatabase.delete(TABLE_LIB, COLUMN_NAME + " = ? AND " + COLUMN_PATH + " = ? AND "+COLUMN_LIB+" = ? ",
+                new String[] {name, path, lib});
+        sqLiteDatabase.delete(TABLE_LIB, COLUMN_NAME + " = ? AND " + COLUMN_PATH + " = ? AND "+COLUMN_LIB+" = ? ",
+                new String[] {"", "", lib});
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(COLUMN_NAME, name);
+        contentValues.put(COLUMN_PATH, path);
+        contentValues.put(COLUMN_LIB, lib);
+        sqLiteDatabase.insert(TABLE_LIB,null,contentValues );
+
+    }
+
+//批量添加文件列表到库并自动去重去空
+    public void updateLibPath(String[] paths , String lib) {
+
+        SQLiteDatabase sqLiteDatabase = getWritableDatabase();
+       sqLiteDatabase.beginTransaction();
+        sqLiteDatabase.delete(TABLE_LIB, COLUMN_NAME + " = ? AND " + COLUMN_PATH + " = ? AND "+COLUMN_LIB+" = ? ",
+                new String[] {"", "", lib});
+
+        for (String path : paths) {
+            String name = path.replaceFirst("/$", "").replaceAll(".*/", "");
+
+            sqLiteDatabase.delete(TABLE_LIB, COLUMN_NAME + " = ? AND " + COLUMN_PATH + " = ? AND "+COLUMN_LIB+" = ? ",
+                    new String[] {name, path, lib});
+
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(COLUMN_NAME, name);
+            contentValues.put(COLUMN_PATH, path);
+            contentValues.put(COLUMN_LIB, lib);
+            sqLiteDatabase.insert(TABLE_LIB,null,contentValues );
+        }
+        sqLiteDatabase.setTransactionSuccessful();
+        sqLiteDatabase.endTransaction();
+    }
+
+    //新的存储数据到lib表的方法，防止插入重复数据，并且不需要使用operation类了。
+    //然而并不能用，因为主键是_ID
+    public void updateLibPath0(String name, String path , String lib) {
+        SQLiteDatabase sqLiteDatabase = getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(COLUMN_NAME, name);
+        contentValues.put(COLUMN_PATH, path);
+        contentValues.put(COLUMN_LIB, lib);
+        sqLiteDatabase.replace(TABLE_LIB,null,contentValues );
+    }
+
     private ArrayList<String> getPath(Operation operation) {
 
         SQLiteDatabase sqLiteDatabase = getReadableDatabase();
@@ -561,6 +865,8 @@ public class UtilsHandler extends SQLiteOpenHelper {
                 return TABLE_GRID;
             case BOOKMARKS:
                 return TABLE_BOOKMARKS;
+            case LIB:
+                return TABLE_LIB;
             case SMB:
                 return TABLE_SMB;
             case SFTP:

@@ -57,7 +57,7 @@ public class RarHelperTask extends CompressedHelperTask {
     @Override
     void addElements(ArrayList<CompressedObjectParcelable> elements) {
         try {
-            Archive zipfile = new Archive(new File(fileLocation));
+            Archive zipfile = new Archive(new File(fileLocation) );
             String relativeDirDiffSeparator = relativeDirectory.replace(CompressedHelper.SEPARATOR, "\\");
 
             for (FileHeader rarArchive : zipfile.getFileHeaders()) {

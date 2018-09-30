@@ -55,7 +55,9 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.text.BoringLayout;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -72,6 +74,7 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.amaze.filemanager.R;
 import com.amaze.filemanager.activities.superclasses.PermissionsActivity;
+import com.amaze.filemanager.activities.superclasses.ThemedActivity;
 import com.amaze.filemanager.asynchronous.asynctasks.DeleteTask;
 import com.amaze.filemanager.asynchronous.asynctasks.MoveFiles;
 import com.amaze.filemanager.asynchronous.asynctasks.PrepareCopyTask;
@@ -124,6 +127,7 @@ import com.amaze.filemanager.utils.Utils;
 import com.amaze.filemanager.utils.application.AppConfig;
 import com.amaze.filemanager.utils.files.FileUtils;
 import com.amaze.filemanager.utils.theme.AppTheme;
+import com.amaze.filemanager.utils.VerifyPath;
 import com.cloudrail.si.CloudRail;
 import com.cloudrail.si.exceptions.AuthenticationException;
 import com.cloudrail.si.exceptions.ParseException;
@@ -134,7 +138,11 @@ import com.cloudrail.si.services.GoogleDrive;
 import com.cloudrail.si.services.OneDrive;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -147,9 +155,12 @@ import jahirfiquitiva.libs.fabsmenu.FABsMenuListener;
 import jahirfiquitiva.libs.fabsmenu.TitleFAB;
 
 import static android.os.Build.VERSION.SDK_INT;
+import static com.amaze.filemanager.filesystem.RootHelper.runShellCommand;
 import static com.amaze.filemanager.fragments.preference_fragments.PreferencesConstants.PREFERENCE_BOOKMARKS_ADDED;
+import static com.amaze.filemanager.fragments.preference_fragments.PreferencesConstants.PREFERENCE_BUILD_AMAZE_FOLDER;
 import static com.amaze.filemanager.fragments.preference_fragments.PreferencesConstants.PREFERENCE_COLORED_NAVIGATION;
 import static com.amaze.filemanager.fragments.preference_fragments.PreferencesConstants.PREFERENCE_NEED_TO_SET_HOME;
+import static com.amaze.filemanager.fragments.preference_fragments.PreferencesConstants.PREFERENCE_SHOW_GOBACK_BUTTON;
 import static com.amaze.filemanager.fragments.preference_fragments.PreferencesConstants.PREFERENCE_SHOW_HIDDENFILES;
 import static com.amaze.filemanager.fragments.preference_fragments.PreferencesConstants.PREFERENCE_VIEW;
 
@@ -470,7 +481,12 @@ public class MainActivity extends PermissionsActivity implements SmbConnectionLi
                 }
             });
         }
+
     }
+
+
+
+
 
     /**
      * Checks for the action to take when Amaze receives an intent from external source
@@ -548,6 +564,7 @@ public class MainActivity extends PermissionsActivity implements SmbConnectionLi
         floatingActionButton.removeButton(findViewById(R.id.menu_new_folder));
         floatingActionButton.removeButton(findViewById(R.id.menu_new_file));
         floatingActionButton.removeButton(findViewById(R.id.menu_new_cloud));
+        floatingActionButton.removeButton(findViewById(R.id.menu_new_lib));
 
         floatingActionButton.setMenuButtonIcon(R.drawable.ic_file_download_white_24dp);
         floatingActionButton.getMenuButton().setOnClickListener(v -> {
@@ -874,8 +891,19 @@ public class MainActivity extends PermissionsActivity implements SmbConnectionLi
             menu.findItem(R.id.home).setVisible(true);
             menu.findItem(R.id.history).setVisible(true);
             menu.findItem(R.id.sethome).setVisible(true);
-            menu.findItem(R.id.sort).setVisible(true);
+          //  menu.findItem(R.id.sort).setVisible(true);
+            menu.findItem(R.id.dsort).setVisible(true);
+            menu.findItem(R.id.sortby).setVisible(true);
             if (getBoolean(PREFERENCE_SHOW_HIDDENFILES)) menu.findItem(R.id.hiddenitems).setVisible(true);
+
+            if (getBoolean(PREFERENCE_SHOW_HIDDENFILES)) {
+                menu.findItem(R.id.showhidden0).setVisible(true);
+                menu.findItem(R.id.showhidden1).setVisible(false);
+            }else{
+                menu.findItem(R.id.showhidden0).setVisible(false);
+                menu.findItem(R.id.showhidden1).setVisible(true);
+            }
+
             menu.findItem(R.id.view).setVisible(true);
             menu.findItem(R.id.extract).setVisible(false);
             invalidatePasteButton(menu.findItem(R.id.paste));
@@ -890,12 +918,19 @@ public class MainActivity extends PermissionsActivity implements SmbConnectionLi
             menu.findItem(R.id.home).setVisible(false);
             menu.findItem(R.id.history).setVisible(false);
             menu.findItem(R.id.extract).setVisible(false);
-            if (fragment instanceof ProcessViewerFragment) {
+            menu.findItem(R.id.dsort).setVisible(false);
+            menu.findItem(R.id.sortby).setVisible(false);
+
+            menu.findItem(R.id.showhidden0).setVisible(false);
+            menu.findItem(R.id.showhidden1).setVisible(false);
+            menu.findItem(R.id.openfilelib).setVisible(false);
+
+/*            if (fragment instanceof ProcessViewerFragment) {
                 menu.findItem(R.id.sort).setVisible(false);
             } else {
                 menu.findItem(R.id.dsort).setVisible(false);
                 menu.findItem(R.id.sortby).setVisible(false);
-            }
+            }*/
             menu.findItem(R.id.hiddenitems).setVisible(false);
             menu.findItem(R.id.view).setVisible(false);
             menu.findItem(R.id.paste).setVisible(false);
@@ -907,7 +942,10 @@ public class MainActivity extends PermissionsActivity implements SmbConnectionLi
             menu.findItem(R.id.search).setVisible(false);
             menu.findItem(R.id.home).setVisible(false);
             menu.findItem(R.id.history).setVisible(false);
-            menu.findItem(R.id.sort).setVisible(false);
+            menu.findItem(R.id.openfilelib).setVisible(false);
+         //   menu.findItem(R.id.sort).setVisible(false);
+            menu.findItem(R.id.dsort).setVisible(false);
+            menu.findItem(R.id.sortby).setVisible(false);
             menu.findItem(R.id.hiddenitems).setVisible(false);
             menu.findItem(R.id.view).setVisible(false);
             menu.findItem(R.id.paste).setVisible(false);
@@ -946,6 +984,7 @@ public class MainActivity extends PermissionsActivity implements SmbConnectionLi
 
         // Handle action buttons
         MainFragment ma = getCurrentMainFragment();
+        ArrayList  f;
 
         switch (item.getItemId()) {
             case R.id.home:
@@ -956,6 +995,16 @@ public class MainActivity extends PermissionsActivity implements SmbConnectionLi
                 if (ma != null)
                     GeneralDialogCreation.showHistoryDialog(dataUtils, getPrefs(), ma, getAppTheme());
                 break;
+            case R.id.openfilelib:
+                if (ma != null){
+                //    f = utilsHandler.getLibraryList();
+               //     GeneralDialogCreation.showLibraryDialog(dataUtils, getPrefs(), ma, getAppTheme(),f);
+                    GeneralDialogCreation.showLibraryRootDialog(dataUtils, getPrefs(), ma, getAppTheme(),utilsHandler);
+                }
+
+                break;
+
+
             case R.id.sethome:
                 if (ma == null) return super.onOptionsItemSelected(item);
                 final MainFragment main = ma;
@@ -975,12 +1024,19 @@ public class MainActivity extends PermissionsActivity implements SmbConnectionLi
             case R.id.exit:
                 finish();
                 break;
-            case R.id.sort:
+            case R.id.showhidden0:
+                getPrefs().edit().putBoolean(PreferencesConstants.PREFERENCE_SHOW_HIDDENFILES,  false).commit();
+
+                break;
+            case R.id.showhidden1:
+                getPrefs().edit().putBoolean(PreferencesConstants.PREFERENCE_SHOW_HIDDENFILES,  true).commit();
+                break ;
+/*            case R.id.sort:
                 Fragment fragment = getFragmentAtFrame();
                 if (fragment instanceof AppsListFragment) {
                     GeneralDialogCreation.showSortDialog((AppsListFragment) fragment, getAppTheme());
                 }
-                break;
+                break;*/
             case R.id.sortby:
                 if (ma != null)
                     GeneralDialogCreation.showSortDialog(ma, getAppTheme(), getPrefs());
@@ -1504,6 +1560,7 @@ public class MainActivity extends PermissionsActivity implements SmbConnectionLi
         initFabTitle(findViewById(R.id.menu_new_folder), MainActivityHelper.NEW_FOLDER);
         initFabTitle(findViewById(R.id.menu_new_file), MainActivityHelper.NEW_FILE);
         initFabTitle(findViewById(R.id.menu_new_cloud), MainActivityHelper.NEW_CLOUD);
+        initFabTitle(findViewById(R.id.menu_new_lib), MainActivityHelper.NEW_LIB);
     }
 
     private void initFabTitle(TitleFAB fabTitle, int type) {

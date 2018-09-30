@@ -44,6 +44,8 @@ import com.amaze.filemanager.adapters.glide.AppsAdapterPreloadModel;
 import com.amaze.filemanager.adapters.holders.AppHolder;
 import com.amaze.filemanager.asynchronous.asynctasks.DeleteTask;
 import com.amaze.filemanager.asynchronous.services.CopyService;
+import com.amaze.filemanager.database.UtilsHandler;
+import com.amaze.filemanager.database.models.OperationData;
 import com.amaze.filemanager.filesystem.HybridFileParcelable;
 import com.amaze.filemanager.filesystem.RootHelper;
 import com.amaze.filemanager.fragments.AppsListFragment;
@@ -52,6 +54,7 @@ import com.amaze.filemanager.utils.AnimUtils;
 import com.amaze.filemanager.utils.OpenMode;
 import com.amaze.filemanager.utils.ServiceWatcherUtil;
 import com.amaze.filemanager.utils.Utils;
+import com.amaze.filemanager.utils.application.AppConfig;
 import com.amaze.filemanager.utils.files.FileUtils;
 import com.amaze.filemanager.utils.provider.UtilitiesProvider;
 import com.amaze.filemanager.utils.theme.AppTheme;
@@ -66,6 +69,7 @@ public class AppsAdapter extends ArrayAdapter<AppDataParcelable> {
     private static final String COM_ANDROID_VENDING = "com.android.vending";
 
     private UtilitiesProvider utilsProvider;
+    private UtilsHandler utilsHandler;
     private Context context;
     private AppsAdapterPreloadModel modelProvider;
     private ViewPreloadSizeProvider<String> sizeProvider;
@@ -101,6 +105,7 @@ public class AppsAdapter extends ArrayAdapter<AppDataParcelable> {
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         final AppDataParcelable rowItem = getItem(position);
+        utilsHandler = AppConfig.getInstance().getUtilsHandler();
 
         View view;
         if (convertView == null) {
@@ -172,6 +177,21 @@ public class AppsAdapter extends ArrayAdapter<AppDataParcelable> {
                         arrayList2.add(new File(rowItem.path));
                         themedActivity.getColorPreference();
                         FileUtils.shareFiles(arrayList2, app.getActivity(), utilsProvider.getAppTheme(), colorAccent);
+                        return true;
+                    case R.id.addapp2lab:
+                        String packageName=rowItem.packageName;
+                        String name=rowItem.label;
+                        String path_ex="/storage/emulated/0/Android/data/"+packageName;
+                        String path_in="/data/data/"+packageName;
+                        if((new File(path_ex)).exists()){
+
+                            utilsHandler.updateLibPath(name+"-外部存储",path_ex,packageName);
+                           // utilsHandler.saveToDatabase(new OperationData(UtilsHandler.Operation.LIB,name+"-外部存储",path_ex,packageName));
+                        }
+                        if((new File(path_in)).exists()){
+                            utilsHandler.updateLibPath(name+"-内部存储",path_in,packageName);
+                           // utilsHandler.saveToDatabase(new OperationData(UtilsHandler.Operation.LIB,name+"-内部存储",path_in,packageName));
+                        }
                         return true;
                     case R.id.unins:
                         final HybridFileParcelable f1 = new HybridFileParcelable(rowItem.path);

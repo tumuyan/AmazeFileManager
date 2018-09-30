@@ -642,5 +642,20 @@
     <string name="unknown">unknown</string>
     <string name="multiple_invalid_archive_entries">Some files in the archive cannot be extracted; archive may be damaged or came from malicious source.</string>
     <string name="saf_otg_explanation">You\'ll now go to Android\'s filesystem for security reasons. Please select the USB device from the list on the left.</string>
+    <string name="menu_item_hidden_file_on">Show Hidden File</string>
+    <string name="menu_item_hidden_file_off">Show Normal File</string>
+    <string name="file_lib">File Library</string>
+    <string name="menu_item_add_to_lib">Add to Library</string>
+    <string name="open_file_lib">Open File Library</string>
+    <string name="about_tversion"></string>
+    <string name="scan_sd">Scan SD path and add to library.</string>
+    <string name="make_sd">Make Amazie path in the SD card.</string>
+    <string name="rempve_empty_path">Rempve empty path from library.</string>
+    <string name="remove_duplicate_file">Remove duplicate file from library.</string>
+    <string name="new_lib_stat_0">is exist.</string>
+    <string name="new_lib_stat_1">is increased.</string>
+    <string name="new_a_lib">Add a new library</string>
+    <string name="remove_a_lib">Remove a library</string>
+    <string name="remove_a_lib_item">Remove a library item</string>
 </resources>
 

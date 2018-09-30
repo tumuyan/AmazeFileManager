@@ -7,6 +7,7 @@ import android.preference.PreferenceManager;
 import com.amaze.filemanager.fragments.preference_fragments.PreferencesConstants;
 
 import static com.amaze.filemanager.fragments.preference_fragments.PreferencesConstants.PREFERENCE_BOOKMARKS_ADDED;
+import static com.amaze.filemanager.fragments.preference_fragments.PreferencesConstants.PREFERENCE_BUILD_AMAZE_FOLDER;
 import static com.amaze.filemanager.fragments.preference_fragments.PreferencesConstants.PREFERENCE_CHANGEPATHS;
 import static com.amaze.filemanager.fragments.preference_fragments.PreferencesConstants.PREFERENCE_COLORED_NAVIGATION;
 import static com.amaze.filemanager.fragments.preference_fragments.PreferencesConstants.PREFERENCE_COLORIZE_ICONS;
@@ -54,6 +55,7 @@ public class PreferenceActivity extends BasicActivity {
         boolean defaultValue;
 
         switch (key) {
+            case PREFERENCE_BUILD_AMAZE_FOLDER:
             case PREFERENCE_SHOW_PERMISSIONS:
             case PREFERENCE_SHOW_GOBACK_BUTTON:
             case PREFERENCE_SHOW_HIDDENFILES:

@@ -99,6 +99,7 @@ public abstract class FileUtil {
      */
     @SuppressWarnings("null")
     private static boolean copyFile(final File source, final File target, Context context) {
+        Log.w("copy file source target",source.getPath()+"  "+target.getPath());
         FileInputStream inStream = null;
         OutputStream outStream = null;
         FileChannel inChannel = null;

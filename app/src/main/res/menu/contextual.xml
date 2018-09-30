@@ -63,6 +63,9 @@
         android:id="@+id/hide"
         android:title="@string/hide" />
     <item
+        android:id="@+id/add_item_to_lib"
+        android:title="@string/menu_item_add_to_lib" />
+    <item
         android:id="@+id/addshortcut"
         android:title="@string/addshortcut" />
 

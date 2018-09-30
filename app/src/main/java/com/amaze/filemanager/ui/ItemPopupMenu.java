@@ -127,6 +127,8 @@ public class ItemPopupMenu extends PopupMenu implements PopupMenu.OnMenuItemClic
                 boolean useNewStack = sharedPrefs.getBoolean(PreferencesConstants.PREFERENCE_TEXTEDITOR_NEWSTACK, false);
                 FileUtils.openWith(new File(rowItem.desc), mainFragment.getActivity(), useNewStack);
                 return true;
+
+
             case R.id.encrypt:
                 final Intent encryptIntent = new Intent(context, EncryptService.class);
                 encryptIntent.putExtra(EncryptService.TAG_OPEN_MODE, rowItem.getMode().ordinal());

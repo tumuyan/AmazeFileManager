@@ -14,14 +14,12 @@ import com.amaze.filemanager.R;
 import com.amaze.filemanager.activities.MainActivity;
 import com.amaze.filemanager.adapters.holders.HiddenViewHolder;
 import com.amaze.filemanager.asynchronous.asynctasks.DeleteTask;
-import com.amaze.filemanager.database.UtilsHandler;
 import com.amaze.filemanager.filesystem.HybridFile;
 import com.amaze.filemanager.filesystem.HybridFileParcelable;
 import com.amaze.filemanager.fragments.MainFragment;
 import com.amaze.filemanager.ui.dialogs.GeneralDialogCreation;
 import com.amaze.filemanager.utils.DataUtils;
 import com.amaze.filemanager.utils.OpenMode;
-import com.amaze.filemanager.utils.application.AppConfig;
 import com.amaze.filemanager.utils.files.FileUtils;
 
 import java.io.File;
@@ -31,7 +29,7 @@ import java.util.ArrayList;
 /**
  * Created by Arpit on 16-11-2014 edited by Emmanuel Messulam <emmanuelbendavid@gmail.com>
  */
-public class HiddenAdapter extends RecyclerView.Adapter<HiddenViewHolder> {
+public class HiddenAdapter2 extends RecyclerView.Adapter<HiddenViewHolder> {
 
     private SharedPreferences sharedPrefs;
     private MainFragment context;
@@ -41,30 +39,17 @@ public class HiddenAdapter extends RecyclerView.Adapter<HiddenViewHolder> {
     private boolean hide;
     private DataUtils dataUtils = DataUtils.getInstance();
 
-   private UtilsHandler utilsHandler;
-   private String lib="";
+    public HiddenAdapter2(Context context, MainFragment mainFrag, SharedPreferences sharedPreferences,
+                          ArrayList<HybridFile> items, MaterialDialog materialDialog, boolean hide) {
+        this.c = context;
+        this.context = mainFrag;
+        sharedPrefs = sharedPreferences;
+        this.items = new ArrayList<>(items);
+        this.hide = hide;
+        this.materialDialog = materialDialog;
+    }
 
-    public HiddenAdapter(Context context, MainFragment mainFrag, SharedPreferences sharedPreferences,
-                         ArrayList<HybridFile> items, MaterialDialog materialDialog, boolean hide) {
-        this.c = context;
-        this.context = mainFrag;
-        sharedPrefs = sharedPreferences;
-        this.items = new ArrayList<>(items);
-        this.hide = hide;
-        this.materialDialog = materialDialog;
-        utilsHandler = AppConfig.getInstance().getUtilsHandler();
-    }
-    public HiddenAdapter(Context context, MainFragment mainFrag, SharedPreferences sharedPreferences,
-                         ArrayList<HybridFile> items, MaterialDialog materialDialog, boolean hide,String lib) {
-        this.c = context;
-        this.context = mainFrag;
-        sharedPrefs = sharedPreferences;
-        this.items = new ArrayList<>(items);
-        this.hide = hide;
-        this.materialDialog = materialDialog;
-        utilsHandler = AppConfig.getInstance().getUtilsHandler();
-        this.lib=lib;
-    }
+
 
     @Override
     public HiddenViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -100,38 +85,11 @@ public class HiddenAdapter extends RecyclerView.Adapter<HiddenViewHolder> {
             items.remove(items.get(position));
             notifyDataSetChanged();
         });
-
-        if (lib.length()>0) {
-
-            holder.row.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View view) {
-
-                    GeneralDialogCreation.RemoveALibraryDialog(context, utilsHandler, file.getPath(), lib,  materialDialog,sharedPrefs);
-                    Log.e("item", "long press");
-                    /**
-                     * 点击消息是否进行拦截？
-                     * 如果是true   不会触发后续事件
-                     * 如果是false  会触发后续事件 比如说单击事件
-                     */
-                    return true;
-                }
-            });
-        }
         holder.row.setOnClickListener(view -> {
             materialDialog.dismiss();
             new Thread(() -> {
-                if (file.isDirectory()) {
-                    context.getActivity().runOnUiThread(() -> {
-                        context.loadlist(file.getPath(), false, OpenMode.UNKNOWN);
-                    });
-                } else {
-                    if (!file.isSmb()) {
-                        context.getActivity().runOnUiThread(() -> {
-                            FileUtils.openFile(new File(file.getPath()), (MainActivity) context.getActivity(), sharedPrefs);
-                        });
-                    }
-                }
+                //Log.e(file.getName(),file.getPath());
+                String path=file.getPath();
             }).start();
         });
     }
