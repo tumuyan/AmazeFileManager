@@ -23,6 +23,7 @@ package com.amaze.filemanager.utils;
 
 import android.support.annotation.Nullable;
 
+import android.util.Log;
 import android.view.MenuItem;
 
 import com.amaze.filemanager.ui.views.drawer.MenuMetadata;
@@ -291,7 +292,17 @@ public class DataUtils {
     }
 
     public void addHistoryFile(final String i) {
-        history.push(i);
+
+        String d=i.replaceFirst("/+[^/]*","");
+        if(d.length()>1){
+            history.remove(i);
+            history.push(i);
+            Log.i("addHistory2_push",i);
+        }else{
+            Log.i("addHistory2_skip",i);
+        }
+
+
         if (dataChangeListener != null) {
             dataChangeListener.onHistoryAdded(i);
         }

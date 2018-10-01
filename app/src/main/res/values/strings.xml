@@ -650,7 +650,7 @@
     <string name="about_tversion"></string>
     <string name="scan_sd">Scan SD path and add to library.</string>
     <string name="make_sd">Make Amazie path in the SD card.</string>
-    <string name="rempve_empty_path">Rempve empty path from library.</string>
+    <string name="rempve_empty_path">Remove empty path from library.</string>
     <string name="remove_duplicate_file">Remove duplicate file from library.</string>
     <string name="new_lib_stat_0">is exist.</string>
     <string name="new_lib_stat_1">is increased.</string>

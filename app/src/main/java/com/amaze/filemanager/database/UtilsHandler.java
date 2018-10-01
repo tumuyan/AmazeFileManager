@@ -104,12 +104,6 @@ public class UtilsHandler extends SQLiteOpenHelper {
                 + COLUMN_PATH + " TEXT,"
                 + COLUMN_LIB + " TEXT"
                 + ")";
-/*      暂不启用libname表
-        String queryLibName="CREATE TABLE IF NOT EXISTS " + TABLE_LIBNAME + " ("
-                + COLUMN_ID + " INTEGER PRIMARY KEY,"
-                + COLUMN_LIB + " TEXT,"
-                + COLUMN_LIBNAME + " TEXT"
-                + ")";*/
         String querySmb = "CREATE TABLE IF NOT EXISTS " + TABLE_SMB + " ("
                 + COLUMN_ID + " INTEGER PRIMARY KEY,"
                 + COLUMN_NAME + " TEXT,"
@@ -123,7 +117,6 @@ public class UtilsHandler extends SQLiteOpenHelper {
         db.execSQL(queryBookmarks);
         db.execSQL(querySmb);
         db.execSQL(queryLib);
- //       db.execSQL(queryLibName);
         db.execSQL(querySftp);
         Log.w("UtilsHandler","oncreate");
     }
@@ -267,30 +260,24 @@ public class UtilsHandler extends SQLiteOpenHelper {
         return paths;
     }
 
-    public LinkedList<String> getLibraryLinkedList(String lib) {
+    public LinkedList<String> getHistoryLinkedList2() {
         SQLiteDatabase sqLiteDatabase = getReadableDatabase();
-        Cursor cursor = sqLiteDatabase.query(getTableForOperation(Operation.LIB), null,
-                COLUMN_LIB +" = ? ", new String[]{ lib}, null, null,null);
+        Cursor cursor = sqLiteDatabase.query(getTableForOperation(Operation.HISTORY), null,
+                null, null, null, null, null);
 
         LinkedList<String> paths = new LinkedList<>();
+//        String Path="\n";
         boolean hasNext = cursor.moveToFirst();
         while (hasNext) {
-            paths.push(cursor.getString(cursor.getColumnIndex(COLUMN_PATH)));
-            hasNext = cursor.moveToNext();
-        }
-        cursor.close();
-
-        return paths;
-    }
-
-    public ArrayList<String> getLibraryList(){
-        SQLiteDatabase sqLiteDatabase = getReadableDatabase();
-        Cursor cursor = sqLiteDatabase.query(getTableForOperation(Operation.LIB), null,
-                null, null, null, null, COLUMN_LIB);
-        ArrayList<String> paths = new ArrayList<>();
-        boolean hasNext = cursor.moveToFirst();
-        while (hasNext) {
-            paths.add(cursor.getString(cursor.getColumnIndex(COLUMN_PATH)));
+            String i=cursor.getString(cursor.getColumnIndex(COLUMN_PATH));
+            String d=i.replaceFirst("/+[^/]*","");
+            if(d.length()>1){
+                paths.remove(i);
+                paths.push(i);
+                Log.i("getHistory2_push",i);
+            }else{
+                Log.i("getHistory2_skip",i);
+            }
             hasNext = cursor.moveToNext();
         }
         cursor.close();
@@ -315,11 +302,7 @@ public class UtilsHandler extends SQLiteOpenHelper {
     public ArrayList<String[]> getLibraryChildList(String lib){
         SQLiteDatabase sqLiteDatabase = getReadableDatabase();
         Cursor cursor = sqLiteDatabase.query(getTableForOperation(Operation.LIB),null,
-//             COLUMN_NAME+" LIKE ? AND "+
-//                     COLUMN_PATH+" LIKE ? AND " +
-
                 COLUMN_LIB +" = ? ", new String[]{ lib}, null, null,null);
-                //     COLUMN_LIB +" = ? ", new String[]{lib}, null, null,null);
         ArrayList<String[]> paths = new ArrayList<>();
         boolean hasNext = cursor.moveToFirst();
         while (hasNext) {
@@ -333,7 +316,7 @@ public class UtilsHandler extends SQLiteOpenHelper {
         return paths;
     }
 
-    // 刷新文件库的空滤镜
+    // 刷新 文件库 的 空路径
     public void removeEmptyPath(){
 
         SQLiteDatabase sqLiteDatabase = getReadableDatabase();
@@ -386,6 +369,7 @@ public class UtilsHandler extends SQLiteOpenHelper {
         sqLiteDatabase.endTransaction();
 
     }
+
     // 获取文件库的全部内容
     public ArrayList<String[]> getLibraryAllList(Boolean isExist){
         SQLiteDatabase sqLiteDatabase = getReadableDatabase();
