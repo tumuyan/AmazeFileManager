@@ -180,6 +180,7 @@ public abstract class FileUtil {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 // Storage Access Framework
                 DocumentFile targetDocument = getDocumentFile(target, false, context);
+                if (targetDocument == null) return null;
                 outStream = context.getContentResolver().openOutputStream(targetDocument.getUri());
             } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
                 // Workaround for Kitkat ext SD card
@@ -669,9 +670,11 @@ public abstract class FileUtil {
             try {
                 output.close();
             } catch (IOException e) {
+                e.printStackTrace();
                 // do nothing.
             }
         } catch (FileNotFoundException e) {
+            e.printStackTrace();
             return false;
         }
         boolean result = file.canWrite();
