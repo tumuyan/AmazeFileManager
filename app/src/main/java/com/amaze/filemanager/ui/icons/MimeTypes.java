@@ -329,6 +329,12 @@ public static void getMimeType4(String path){
     }
     public static void getMimeType4(File path){
         ContentInfoUtil util = new ContentInfoUtil();
+        Log.i("path",path.getPath());
+        if(path.exists()){
+            Log.i("file","exist");
+        }else{
+            Log.i("file","null");
+        }
         //   ContentInfo info = util.findMatch(path);
         try {
             ContentInfo info = util.findMatch(path);

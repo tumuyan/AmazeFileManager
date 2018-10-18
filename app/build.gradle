@@ -21,8 +21,8 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.amaze.filemanager.tversion"
-        minSdkVersion 16
+        applicationId "com.amaze.filemanager"
+        minSdkVersion 15
         targetSdkVersion 26
         versionCode 66
         versionName "3.3.0RC1 T1"
