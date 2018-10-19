@@ -21,7 +21,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.amaze.filemanager"
+        applicationId "com.amaze.filemanager.t"
         minSdkVersion 14
         targetSdkVersion 26
         versionCode 66
@@ -46,8 +46,7 @@ android {
 
         release {
             signingConfig signingConfigs.release
-
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
         }
     }

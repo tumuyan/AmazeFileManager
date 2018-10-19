@@ -46,11 +46,9 @@ public class UtilsHandler extends SQLiteOpenHelper {
     private static final String TABLE_LIST = "list";
     private static final String TABLE_GRID = "grid";
     private static final String TABLE_BOOKMARKS = "bookmarks";
-    private static final String TABLE_LIB = "lib";
-    private static final String TABLE_LIBNAME = "lib_name";
+    private static final String TABLE_LIB = "table_lib";
     private static final String TABLE_SMB = "smb";
     private static final String TABLE_SFTP = "sftp";
-
     private static final String COLUMN_ID = "_id";
     private static final String COLUMN_PATH = "path";
     private static final String COLUMN_NAME = "name";
@@ -58,7 +56,7 @@ public class UtilsHandler extends SQLiteOpenHelper {
     private static final String COLUMN_PRIVATE_KEY_NAME = "ssh_key_name";
     private static final String COLUMN_PRIVATE_KEY = "ssh_key";
     private static final String COLUMN_LIB = "lib";
-    private static final String COLUMN_LIBNAME = "lib_name";
+
     private final String TEMP_TABLE_PREFIX ="temp_";
 
     private String queryHistory = "CREATE TABLE IF NOT EXISTS " + TABLE_HISTORY + " ("
@@ -87,6 +85,13 @@ public class UtilsHandler extends SQLiteOpenHelper {
             + COLUMN_PATH + " TEXT UNIQUE"
             + ");";
 
+    private String queryLib = "CREATE TABLE IF NOT EXISTS " + TABLE_LIB + " ("
+            + COLUMN_ID + " INTEGER PRIMARY KEY,"
+            + COLUMN_NAME + " TEXT,"
+            + COLUMN_PATH + " TEXT,"
+            + COLUMN_LIB + " TEXT"
+            + ")";
+
     private String querySmb = "CREATE TABLE IF NOT EXISTS " + TABLE_SMB + " ("
             + COLUMN_ID + " INTEGER PRIMARY KEY,"
             + COLUMN_NAME + " TEXT,"
@@ -109,40 +114,6 @@ public class UtilsHandler extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String queryHistory = "CREATE TABLE IF NOT EXISTS " + TABLE_HISTORY + " ("
-                + COLUMN_ID + " INTEGER PRIMARY KEY,"
-                + COLUMN_PATH + " TEXT"
-                + ")";
-        String queryHidden = "CREATE TABLE IF NOT EXISTS " + TABLE_HIDDEN + " ("
-                + COLUMN_ID + " INTEGER PRIMARY KEY,"
-                + COLUMN_PATH + " TEXT"
-                + ")";
-        String queryList = "CREATE TABLE IF NOT EXISTS " + TABLE_LIST + " ("
-                + COLUMN_ID + " INTEGER PRIMARY KEY,"
-                + COLUMN_PATH + " TEXT"
-                + ")";
-        String queryGrid = "CREATE TABLE IF NOT EXISTS " + TABLE_GRID + " ("
-                + COLUMN_ID + " INTEGER PRIMARY KEY,"
-                + COLUMN_PATH + " TEXT"
-                + ")";
-        String queryBookmarks = "CREATE TABLE IF NOT EXISTS " + TABLE_BOOKMARKS + " ("
-                + COLUMN_ID + " INTEGER PRIMARY KEY,"
-                + COLUMN_NAME + " TEXT,"
-                + COLUMN_PATH + " TEXT"
-
-                + ")";
-        String queryLib="CREATE TABLE IF NOT EXISTS " + TABLE_LIB  + " ("
-                + COLUMN_ID + " INTEGER PRIMARY KEY,"
-                + COLUMN_NAME + " TEXT,"
-                + COLUMN_PATH + " TEXT,"
-                + COLUMN_LIB + " TEXT"
-                + ")";
-        String querySmb = "CREATE TABLE IF NOT EXISTS " + TABLE_SMB + " ("
-                + COLUMN_ID + " INTEGER PRIMARY KEY,"
-                + COLUMN_NAME + " TEXT,"
-                + COLUMN_PATH + " TEXT"
-                + ")";
-
         db.execSQL(queryHistory);
         db.execSQL(queryHidden);
         db.execSQL(queryList);
@@ -191,8 +162,8 @@ public class UtilsHandler extends SQLiteOpenHelper {
                 db.execSQL("ALTER TABLE " + backupTable + " RENAME TO " + TABLE_BOOKMARKS + ";");
 
                 backupTable = TEMP_TABLE_PREFIX + TABLE_LIB;
-                db.execSQL(querylib.replace(TABLE_LIB, backupTable));
-                db.execSQL("INSERT INTO " + backupTable + " SELECT * FROM " + TABLE_LIB + " group by path;");
+                db.execSQL(queryLib.replace(TABLE_LIB, backupTable));
+                db.execSQL("INSERT INTO " + backupTable + " SELECT * FROM " + TABLE_LIB + " group by path , lib;");
                 db.execSQL("DROP TABLE " + TABLE_LIB + ";");
                 db.execSQL("ALTER TABLE " + backupTable + " RENAME TO " + TABLE_LIB + ";");
 
@@ -349,8 +320,9 @@ public class UtilsHandler extends SQLiteOpenHelper {
         boolean hasNext = cursor.moveToFirst();
         while (hasNext) {
             String i=cursor.getString(cursor.getColumnIndex(COLUMN_PATH));
-            String d=i.replaceFirst("/+[^/]*","");
-            if(d.length()>1){
+            String d=i.replaceFirst("^/[^/]*","");
+            String e=i.replaceFirst("^/storage/emulated/[0-9]*","");
+            if(d.length()>1 && e.length()>1){
                 paths.remove(i);
                 paths.push(i);
                 Log.i("getHistory2_push",i);

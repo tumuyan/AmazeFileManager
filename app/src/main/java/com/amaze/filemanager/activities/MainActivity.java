@@ -370,7 +370,7 @@ public class MainActivity extends PermissionsActivity implements SmbConnectionLi
             public Void doInBackground() {
 
                 dataUtils.setHiddenFiles(utilsHandler.getHiddenFilesConcurrentRadixTree());
-                dataUtils.setHistory(utilsHandler.getHistoryLinkedList());
+                dataUtils.setHistory(utilsHandler.getHistoryLinkedList2());
                 dataUtils.setGridfiles(utilsHandler.getGridViewList());
                 dataUtils.setListfiles(utilsHandler.getListViewList());
                 dataUtils.setBooks(utilsHandler.getBookmarksList());

@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 public class VerifyPath {
 
     private static UtilsHandler utilsHandler ;
+    private static String AMAZE_FILE_CENTER= Environment.getExternalStorageDirectory().getAbsolutePath() + "/AmazeFileCenter/";
 
 
 
@@ -32,19 +33,18 @@ public class VerifyPath {
 
     public static boolean buildAmazeFolder(){
         utilsHandler = AppConfig.getInstance().getUtilsHandler();
-        String dir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/AmazeFileCenter/";
-        File file=new File(dir);
+        File file=new File(AMAZE_FILE_CENTER);
         if (!file.exists()){
             file.mkdir();
         }
 
         if(file.exists() && file.isDirectory()){
             String[] AmazeDirs = new String[] {
-                    dir+"Picture",
-                    dir+"Download",
-                    dir+"Audio",
-                    dir+"Video",
-                    dir+"Music"
+                    AMAZE_FILE_CENTER+"Picture",
+                    AMAZE_FILE_CENTER+"Download",
+                    AMAZE_FILE_CENTER+"Audio",
+                    AMAZE_FILE_CENTER+"Video",
+                    AMAZE_FILE_CENTER+"Music"
             };
 
             String[] Libs = new String[] {
@@ -58,9 +58,9 @@ public class VerifyPath {
             String[][]  KeyWords=new String[][]{
                     {"camera","photo","pic","图片","相片","照片","dicm","screenshot","截屏","snap","image"},
                     {"down","下载"},
-                    {"音乐","music"},
+                    {"音频","录音","record","audio"},
                     {"movie","video","视频"},
-                    {"音频","录音","record","audio"}
+                    {"音乐","music"}
             };
             for (int i=0;i<AmazeDirs.length;i++){
 
@@ -76,19 +76,22 @@ public class VerifyPath {
                 String pathgroup=findFolder2Layer(new File(Environment.getExternalStorageDirectory().getAbsolutePath()),KeyWords[i]);
                 String[] path=pathgroup.split("\n");
                 for(String pathsource:path){
-
-
                     try{
                         if( pathsource!=null && pathsource.length()>0
-                                && !pathsource.contains("/AmazeFileCenter") && !pathsource.contains("/Android") && !pathsource.contains("/backup") ){
+                                && !pathsource.contains(AMAZE_FILE_CENTER) && !pathsource.contains("/Android") && !pathsource.contains("/backup") ){
                             n++;
 
-                            String newFileName=dir_child+pathsource.replaceFirst(".*/","").replace("/","_")+n;
-                            String name=pathsource.replaceAll("/$","").replaceFirst(".*/","");
+//                            String newFileName=dir_child+pathsource.replaceFirst(".*/","").replace("/","_")+n;
+                            String name="";
+                            if(pathsource.matches("^.*/$")){
+                                  name=pathsource.replaceAll("/$","").replaceFirst(".*/","")+"/";
+                            }else{
+                                  name=pathsource.replaceFirst(".*/","");
+                            }
+       ;
                             String lib=Libs[i];
-
                          //   utilsHandler.saveToDatabase(new OperationData(UtilsHandler.Operation.LIB,name,pathsource,lib));
-                            utilsHandler.updateLibPath(name,newFileName,lib);
+                            utilsHandler.updateLibPath(name,pathsource,lib);
                         }else{
                             Log.e("data","null error");
                         }
@@ -138,6 +141,7 @@ public class VerifyPath {
         String result="";
         if( Folder.isDirectory()){
             File[] files = Folder.listFiles();
+            if(files==null) return result;
             for(File file:files){
                 if(file.isDirectory()){
                     String fileName=file.getName();

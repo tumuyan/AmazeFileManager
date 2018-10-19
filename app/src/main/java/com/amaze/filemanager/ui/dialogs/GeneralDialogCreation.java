@@ -103,9 +103,7 @@ import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.IValueFormatter;
 import com.github.mikephil.charting.utils.ViewPortHandler;
-import com.squareup.haha.perflib.Main;
 
-import org.hamcrest.core.Every;
 
 import java.io.File;
 import java.io.IOException;
@@ -117,7 +115,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Stream;
+
 
 import static android.os.Build.VERSION_CODES.M;
 import static com.amaze.filemanager.fragments.preference_fragments.PreferencesConstants.PREFERENCE_SORTBY_ONLY_THIS;
