@@ -24,10 +24,12 @@ package com.amaze.filemanager.fragments;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
@@ -52,6 +54,7 @@ import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
+import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -189,11 +192,17 @@ public class MainFragment extends android.support.v4.app.Fragment implements Bot
      * any of the search result
      */
     private boolean mRetainSearchTask = false;
+    private boolean hasFileMagic;
+    private boolean hasCoolApk;
+    private String PACKAGE_FILEMAGIC="com.tumuyan.filemagic";
+    private String PACKAGE_COOLAPK="com.coolapk.market";
+
 
     /**
      * For caching the back button
      */
     private LayoutElementParcelable back = null;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -215,6 +224,8 @@ public class MainFragment extends android.support.v4.app.Fragment implements Bot
         accentColor = getMainActivity().getAccent();
         primaryColor = getMainActivity().getCurrentColorPreference().primaryFirstTab;
         primaryTwoColor = getMainActivity().getCurrentColorPreference().primarySecondTab;
+        hasFileMagic=isPkgInstalled(PACKAGE_FILEMAGIC);
+        hasCoolApk=isPkgInstalled(PACKAGE_COOLAPK);
     }
 
     public void stopAnimation() {
@@ -521,6 +532,14 @@ public class MainFragment extends android.support.v4.app.Fragment implements Bot
             menu.findItem(R.id.all).setTitle(positions.size() == folder_count + file_count ?
                     R.string.deselect_all : R.string.selectall);
 
+            showOption(R.id.filemagic,menu);
+
+/*            if(hasFileMagic){
+                showOption(R.id.filemagic,menu);
+            }else{
+                hideOption(R.id.filemagic,menu);
+            }*/
+
             if (openMode != OpenMode.FILE) {
                 hideOption(R.id.addshortcut, menu);
                 hideOption(R.id.compress, menu);
@@ -751,6 +770,38 @@ public class MainFragment extends android.support.v4.app.Fragment implements Bot
                     addShortcut(checkedItems.get(0));
                     mode.finish();
                     return true;
+                case R.id.filemagic:
+                    if(!hasFileMagic){
+                        if(hasCoolApk){
+                            launchAppDetail(getContext(),PACKAGE_FILEMAGIC,PACKAGE_COOLAPK);
+                          //  goToMarket(getContext(),PACKAGE_FILEMAGIC);
+                        }else{
+                            Uri p=Uri.parse("https://www.coolapk.com/apk/206087");
+                            Intent i=new Intent(Intent.ACTION_VIEW,p);
+                            startActivity(i);
+                        }
+                        mode.finish();
+                        return false;
+                    }
+
+                    ArrayList<String> paths_list=new ArrayList<String>();
+
+                    for (int i1 = 0; i1 < checkedItems.size(); i1++) {
+                        paths_list.add(checkedItems.get(i1).desc);
+                    }
+                    if (paths_list != null){
+                        PackageManager packageManager = getContext().getPackageManager();
+                        Intent launchIntentForPackage = packageManager.getLaunchIntentForPackage(PACKAGE_FILEMAGIC);
+                        launchIntentForPackage.putExtra("path",paths_list);
+                        if (launchIntentForPackage != null) {
+                            mode.finish();
+                            startActivity(launchIntentForPackage);
+                            return true;
+                        }
+                    }
+                    mode.finish();
+                    return false;
+
                 default:
                     return false;
             }
@@ -1732,5 +1783,46 @@ public class MainFragment extends android.support.v4.app.Fragment implements Bot
     private boolean getBoolean(String key) {
         return getMainActivity().getBoolean(key);
     }
+
+
+    private boolean isPkgInstalled(String pkgName) {
+        PackageInfo packageInfo = null;
+        try {
+            packageInfo = getActivity().getPackageManager().getPackageInfo(pkgName, 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            packageInfo = null;
+            e.printStackTrace();
+        }
+        if (packageInfo == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public static void goToMarket(Context context, String packageName) {
+        Uri uri = Uri.parse("market://details?id=" + packageName);
+        Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
+        try {
+            context.startActivity(goToMarket);
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void launchAppDetail(Context context, String appPkg, String marketPkg) {
+        try {
+            if (TextUtils.isEmpty(appPkg))
+                return;
+            Uri uri = Uri.parse("market://details?id=" + appPkg);
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            //如果设置了market包名 打开指定app市场
+            if (!TextUtils.isEmpty(marketPkg))
+                intent.setPackage(marketPkg);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }    }
 
 }

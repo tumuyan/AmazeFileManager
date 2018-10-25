@@ -599,9 +599,10 @@
   <string name="file_lib">文件库</string>
     <string name="menu_item_add_to_lib">添加到文件库</string>
   <string name="open_file_lib">打开文件库</string>
-  <string name="about_tversion">T版本是tumuyan基于原版Amaze文件管理器魔改的一个分支。\n
+  <string name="about_tversion">T版本是tumuyan基于原版Amaze文件管理器魔改的一个自用版本。\n
+    基于库的目录文件组，显示精简的浏览历史，快速目录跳转，增强的格式匹配，等等。当然这并不是每个人都有的需求，但是至少是我个人需要而又不存在的功能。\n
     实际上我更希望使用fooView来进行魔改，但是fooVie并不是一个开源项目。在GitHub公开代码的的诸多Android文件管理器中反复筛选比较，最终选定了Amaze文件管理器。\n
-    做了什么样魔改？增加从来没有出现过在android文件管理器上的功能。基于库的目录文件组，快速目录跳转，增强的格式匹配，等等。当然这并不是每个人都有的需求，但是至少是我个人需要而又不存在的功能。\n
+
   </string>
     <string name="new_a_lib">新建文件库</string>
   <string name="new_lib_stat_1">增加成功</string>
