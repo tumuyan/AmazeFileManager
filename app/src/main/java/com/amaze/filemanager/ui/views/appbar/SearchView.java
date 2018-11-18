@@ -63,8 +63,8 @@ public class SearchView {
             @Override
             public void onClick(View v) {
                 String q=searchViewEditText.getText().toString();
-                Log.i("M quary searchOnlyChild",q);
-                a.getCurrentMainFragment().filter_fast_search_child(q);
+                Log.i("M filter quary",q);
+                a.getCurrentMainFragment().filter_search_child(q);
             }
         });
 
@@ -77,7 +77,7 @@ public class SearchView {
             public void afterTextChanged(Editable s) {
                 String q=searchViewEditText.getText().toString();
                 if(q.length()>0){
-                    Log.i("A quary searchOnlyChild",q);
+                    Log.i("A filter quary",q);
                     a.getCurrentMainFragment().filter_fast_search_child(q);
                 }
 
