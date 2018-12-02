@@ -75,7 +75,7 @@
   <string name="dialog_delete_title">永久删除？</string>
   <string name="deleting">正在删除</string>
   <string name="questionset">您确定要将当前路径设置为此选项卡的默认位置吗？</string>
-  <string name="directorysort">目录位置</string>
+  <string name="directorysort">目录排序方式</string>
   <string name="sortby">排序方式</string>
   <string name="sort_only_this">仅应用于此目录</string>
   <string name="theme">主题</string>
@@ -256,7 +256,7 @@
   <string name="doit">确定</string>
   <string name="wanthelp"><u>需要帮助吗？</u></string>
   <string name="quick">快速访问</string>
-  <string name="recent">最新文件</string>
+  <string name="recent">最近访问文件</string>
   <string name="edit">编辑</string>
   <string name="find">在本页中查找</string>
   <string name="grant">授予</string>
@@ -611,4 +611,7 @@
   <string name="rempve_empty_path">从文件库中移除空文件</string>
   <string name="make_sd">在SD目录中新建Amazie路径</string>
   <string name="scan_sd">扫描SD目录并添加到文件库</string>
+  <string name="internalstorage">内部储存空间</string>
+  <string name="saf_otg_explanation">你将进入Android文件系统，为了系统安全，请从左边USB设备列表选择设备。</string>
+  <string name="donation_thanks">感谢您无私的捐赠，这将更加有利于我们项目的开发! (:</string>
 </resources>
