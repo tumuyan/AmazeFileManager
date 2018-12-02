@@ -657,5 +657,6 @@
     <string name="new_a_lib">Add a new library</string>
     <string name="remove_a_lib">Remove a library</string>
     <string name="remove_a_lib_item">Remove a library item</string>
+    <string name="donation_thanks">Thank you for the donation, this keeps us motivated! (:</string>
 </resources>
 

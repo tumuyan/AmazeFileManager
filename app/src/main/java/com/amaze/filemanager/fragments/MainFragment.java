@@ -115,8 +115,11 @@ import com.amaze.filemanager.utils.theme.AppTheme;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -203,6 +206,7 @@ public class MainFragment extends android.support.v4.app.Fragment implements Bot
      */
     private LayoutElementParcelable back = null;
 
+   static private String CurrentYear;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -224,6 +228,7 @@ public class MainFragment extends android.support.v4.app.Fragment implements Bot
         accentColor = getMainActivity().getAccent();
         primaryColor = getMainActivity().getCurrentColorPreference().primaryFirstTab;
         primaryTwoColor = getMainActivity().getCurrentColorPreference().primarySecondTab;
+        CurrentYear=getCurrentYear();
         hasFileMagic=isPkgInstalled(PACKAGE_FILEMAGIC);
         hasCoolApk=isPkgInstalled(PACKAGE_COOLAPK);
     }
@@ -1224,9 +1229,7 @@ public class MainFragment extends android.support.v4.app.Fragment implements Bot
 
     private LayoutElementParcelable getBackElement() {
         if (back == null) {
-            back = new LayoutElementParcelable("..", "", "",
-                    getString(R.string.goback), 0, false, "",
-                    true, getBoolean(PREFERENCE_SHOW_THUMB), OpenMode.UNKNOWN);
+            back = new LayoutElementParcelable(true, getString(R.string.goback), getBoolean(PREFERENCE_SHOW_THUMB));
         }
 
         return back;
@@ -1655,6 +1658,210 @@ public class MainFragment extends android.support.v4.app.Fragment implements Bot
                 .build();
 
         ShortcutManagerCompat.requestPinShortcut(ctx, info, null);
+    }
+
+
+
+    public void filter_fast_search_child( String query) {
+        ArrayList<LayoutElementParcelable>   _LIST_ELEMENTS=new ArrayList<>();
+        String[] querys=query.toLowerCase().split("\\s+");
+        _LIST_ELEMENTS.clear();
+        for(LayoutElementParcelable e:LIST_ELEMENTS){
+            _LIST_ELEMENTS.add(e);
+            String title=e.title.toLowerCase();
+            for(String q:querys){
+                if(! title.contains(q)) {
+                    _LIST_ELEMENTS.remove(e);
+                    break;
+                }
+            }
+        }
+        adapter.setItems(listView,_LIST_ELEMENTS);
+    }
+
+    private static long getTimeFromString(String input){
+
+
+       if(input.matches(".*[a-zA-Z]+")){
+       /*  inpute relative time like +1y  [+2m x]  +3d +4h +5m +200s
+           or +1year +2month +3day +4hour +5min +200second
+           means 1year ago, 2month ago,3days ago,etc.
+        */
+            Log.i("input type","relative time");
+           double  output=Double.valueOf(input.replaceFirst("[^.0-9].*",""));
+           if(input.contains("sec")){
+               output=output*1000;
+           }else        if(input.contains("min")){
+               output=output*1000*60;
+           }else        if(input.contains("hour")){
+               output=output*1000*60*60;
+           }else        if(input.contains("day")){
+               output=output*1000*60*60*24;
+           }else        if(input.contains("mo")){
+               output=output*1000*60*60*24*30;
+           }else        if(input.contains("year")){
+               output=output*1000*60*60*24*365;
+           }else        if(input.contains("s")){
+               output=output*1000;
+           }else        if(input.contains("m")){
+               output=output*1000*60;
+           }else        if(input.contains("h")){
+               output=output*1000*60*60;
+           }else        if(input.contains("d")){
+               output=output*1000*60*60*24;
+           }else        if(input.contains("y")){
+               output=output*1000*60*60*24*365;
+           }
+           return System.currentTimeMillis()-(long)output;
+       }else{
+                  /*   absolute time like  -2018.9   -2018.09  -2018-10
+                    or    -9.10    -09.10  -9-10
+                    or   +2018.11.11  +2018/9/20
+                    or  +2018
+                    or  +12 (equal -this_year-inpute_month)
+           */
+           Log.i("input type","absolute time");
+
+           String[] splitTime=input.split("[^0-9]+");
+
+           for(int i=0;i<splitTime.length;i++){
+               if(splitTime[i].length()==1)
+                   splitTime[i]="0"+splitTime[i];
+           }
+
+           if(splitTime.length==3){
+               return  getDateFromString(splitTime[0]+"-"+splitTime[1]+"-"+splitTime[2],"yyyy-MM-dd");
+           }else if(splitTime[0].length()==4){
+               if(splitTime.length==2)
+                   return  getDateFromString(splitTime[0]+"-"+splitTime[1],"yyyy-MM");
+               return  getDateFromString(splitTime[0],"yyyy");
+           }else{
+               if(splitTime.length==2)
+                   return  getDateFromString(CurrentYear+"-"+splitTime[0]+"-"+splitTime[1],"yyyy-MM-dd");
+               return  getDateFromString(CurrentYear+"-"+splitTime[0],"yyyy-MM");
+           }
+       }
+    }
+
+    private static long getDateFromString(String date,String formate){
+    SimpleDateFormat format = new SimpleDateFormat(formate);
+    try {
+        Date dateStart = format.parse(date);
+       return (dateStart.getTime());
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+ return 0;
+}
+
+    private long getSizeFromString(String input){
+        double  output=Double.valueOf(input.replaceFirst("[^.0-9].*",""));
+        if(input.contains("m")){
+            output=output*1000*1000;
+        }else        if(input.contains("k")){
+            output=output*1000;
+        }else        if(input.contains("g")){
+            output=output*1000*1000*1000;
+        }
+        return (long)output;
+    }
+
+    private String printLongToDate(Long millSec,String type) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date(millSec);
+        String result=sdf.format(date);
+        Log.i("time "+type,result);
+        return result;
+    }
+
+    private static String getCurrentYear() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
+        Date date = new Date();
+        return sdf.format(date);
+    }
+
+
+    public void filter_search_child( String query_input) {
+/*        support relative time :  +10min (show files modified in the last 10min) ;-10h ,etc.
+                absolute time :     +2018.11 (show files modified after 2018.11)
+                        size :      *2M (show files bigger than 2M); >2m /2k   <1000
+                        */
+        ArrayList<LayoutElementParcelable>   _LIST_ELEMENTS=new ArrayList<>();
+        String[] querys=query_input.toLowerCase().split("\\s+");
+        Long time0=-10l,time1=-10l,size0=-10l,size1=-10l;
+        ArrayList<String> query=new ArrayList<>();
+ //       Log.w("input string",query_input+";group size:"+querys.length);
+        for(String q:querys){
+            if(q.length()<0)
+                continue;
+            if(q.matches("[+\\-*/<>]\\d.*")){
+ //               Log.w("input type","time or size");
+                switch(q.substring(0,1)){
+                    case "+":
+                        time0=getTimeFromString(q.substring(1));
+//                        Log.w("modified after",""+time0);
+                        break;
+                    case "-":
+                        time1=getTimeFromString(q.substring(1));
+//                        Log.w("modified before",""+time1);
+                        break;
+
+                    case "*":
+                    case ">":
+                        size0=getSizeFromString(q.substring(1));
+//                        Log.w("file size >",""+size0/1000 +"k");
+                        break;
+                    case "/":
+                    case "<":
+                        size1=getSizeFromString(q.substring(1));
+//                        Log.w("file size <",""+size1/1000 +"k");
+                        break;
+                }
+
+            }else {
+ //               Log.w("input type","normal words");
+                query.add(q);
+            }
+        }
+
+        _LIST_ELEMENTS.clear();
+        for(LayoutElementParcelable e:LIST_ELEMENTS){
+
+            String title=e.title.toLowerCase();
+            boolean not_match=false;
+            for(String q:query){
+                if(! title.contains(q)) {
+                   not_match=true;
+                    break;
+                }
+            }
+            if(not_match){
+                continue;
+            }
+
+            if(time0!=-10){
+//                 printLongToDate(e.date,"file");
+//                 printLongToDate(time0,">time0?");
+                if(e.date<time0)
+                continue;
+            }
+            if(time1!=-10){
+//                 printLongToDate(e.date,"file");
+//                 printLongToDate(time1,"<time1?");
+                if(e.date>time1)
+                continue;
+            }
+            if(size0!=-10){
+                if(e.longSize<size0)
+                continue;
+            }
+            if(size1!=-10){
+                if(e.longSize>size1)
+                continue;
+            }
+            _LIST_ELEMENTS.add(e);
+        }
+        adapter.setItems(listView,_LIST_ELEMENTS);
     }
 
     // This method is used to implement the modification for the pre Searching
